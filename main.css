@@ -1,0 +1,770 @@
+:root {
+    --main: rgba(24, 110, 124, 1);
+    --bold-italic-font-family: "Inter-BoldItalic", Helvetica;
+    --bold-italic-font-weight: 700;
+    --bold-italic-font-size: 16px;
+    --bold-italic-letter-spacing: 0px;
+    --bold-italic-line-height: normal;
+    --bold-italic-font-style: italic;
+    --genral-font-family: "MonomaniacOne-Regular", Helvetica;
+    --genral-font-weight: 400;
+    --genral-font-size: 12px;
+    --genral-letter-spacing: 0px;
+    --genral-line-height: normal;
+    --genral-font-style: normal;
+    --main: rgba(24, 110, 124, 1);
+    --higlight: rgba(29, 184, 204, 1);
+    --complement: rgba(124, 38, 24, 1);
+    --shade: rgba(8, 35, 39, 1);
+    --alternative: rgba(60, 124, 24, 1);
+    --background: rgba(56, 56, 56, 1);
+    --black: rgba(0, 0, 0, 1);
+    --collab: rgba(124, 24, 110, 1);
+}
+  
+* {
+  color: white;
+  font-family: "Courier New", monospace;
+}
+
+/* ----------------------------- table stuff  -----------------------------  */
+table {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+
+td {
+  width: 150px;
+  border: 1px solid black;
+  background-color: var(--main);
+}
+
+th {
+  color: black;
+  background-color: white;
+  position: sticky;
+  top: 0;
+  box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
+}
+
+.tableDisplay {
+  width: 100%;
+  text-align: center;
+}
+
+tr:nth-child(even) {
+  /*Changes every over table colour makes it eiser to view */
+  background-color: #f2f2f2;
+}
+
+/* ----------------------------- phoneTable Table stuff  -----------------------------  */
+.phoneTableTable {
+  border: none;
+  border-collapse: collapse;
+  width: 50%;
+}
+
+.phoneTableTd {
+  width: auto;
+  border: none;
+  color: black;
+  background-color: white;
+  padding: 0px;
+}
+
+.tableDisplay {
+  width: 100%;
+}
+
+/* ----------------------------- Header Stuff -----------------------------  */
+#header {
+  background-color: var(--main);
+  padding: 1%;
+  margin: 0;
+  width: 100%;
+  font-family: "Bebas Neue", cursive;
+  font-style: oblique;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+h1 {
+  margin: 0px;
+  margin-top: 10px;
+  font-size: xx-large;
+}
+
+/* ----------------------------- Navbar Stuff -----------------------------  */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav h1 {
+  flex: 1,; 
+}
+
+nav button {
+  flex-shrink: 3;
+}
+
+.inline {
+  display: inline-block;
+}
+
+.buttonList {
+  width: 30%;
+}
+
+/* ----------------------------- Body stuff -----------------------------  */
+body {
+  background-image: url("imagesTMS/background1.png");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: cover;
+  margin: 0;
+  height: auto;
+}
+
+#main {
+  background-color: var(--main);
+  margin: 5%;
+  
+  padding: 1%;
+  height: auto;
+  width: auto;
+  text-align: center;
+  font-family: "Bebas Neue", cursive;
+  font-style: oblique;
+  box-sizing: border-box;
+  
+}
+
+/* .navButton {
+  height: auto;
+  width: auto;
+} */
+
+#mainLogin {
+  background-color: var(--main);
+  width: 50%;
+  margin: auto;
+  margin-top: 10% !important;
+
+  padding: 10px;
+  border: 5px;
+  min-height: 500px;
+  text-align: center;
+  font-family: "Bebas Neue", cursive;
+  font-style: oblique;
+}
+/*----------------------------tabs stuff ---------------------------- */
+.tabs{
+  display: flex;
+  position: relative;
+  top: -30px;
+  margin-left: -10px;
+  
+}
+.tab{
+  position: relative;
+  left: -20px; 
+  margin-left: 0;
+  padding-left: 20px;
+  background-color: transparent;
+  border: none;
+  border-top:  var(--shade);
+  border-bottom: 20px solid var(--shade);
+	border-right: 20px solid transparent;
+	height: 0;
+	width: auto;
+  font-size: 16px;
+  text-decoration: none;
+}
+.tab:hover{
+  border-bottom: 20px solid var(--main);
+}
+.first{
+  left: 0;
+  z-index: 3; 
+}
+.tab-2{
+  z-index: 2;
+}
+.last{
+  left: -40px;
+  z-index: 1; 
+}
+.selected{
+  border-bottom: 20px solid var(--main);
+}
+
+/*----------------------------footer stuff ---------------------------- */
+#footer {
+  background-color: var(--main);
+  padding: 0%;
+  margin: 0;
+  width: 100%;
+  font-family: "Bebas Neue", cursive;
+  font-style: oblique;
+  text-align: center;
+  box-sizing: border-box;
+  position: fixed;
+}
+
+/*----------------------------phone stuff ---------------------------- */
+.phoneTables {
+  padding: 5%;
+  margin: 10px 10px;
+  min-height: 2cm;
+  height: auto;
+  width: auto;
+  background-color: white;
+  border-radius: 5px;
+  /*display: none;/* lets java script decide what gets displayed */
+  position: relative;
+}
+
+/* --------------- position stuff--------------- */
+.right {
+  right: 0;
+}
+
+.left {
+  left: 0;
+}
+
+.top {
+  top: 0;
+}
+
+.bottom {
+  bottom: 0;
+}
+
+.txtRight {
+  text-align: right;
+}
+
+.txtLeft {
+  text-align: left;
+}
+
+.txtCentre{
+  text-align: center;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/*----------------------------list stuff ---------------------------- */
+
+ul.no-bullets {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+#radio {
+  margin: 0%;
+  display: inline;
+}
+
+b {
+  color: white;
+}
+
+
+/* ----------------------------- Form  and Button stuff  -----------------------------  */
+fieldset {
+  width: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+input {
+  width: 90%;
+  padding: 12px;
+  margin: 12px;
+  border: 1px solid #ccc;
+  border-radius: 50px;
+  box-sizing: border-box;
+  resize: vertical;
+  background-color: white;
+  color: black;
+}
+
+input:focus {
+  background-color: white;
+  border: 3px solid #555;
+}
+
+input.button {
+  margin: 12px;
+}
+
+select {
+  width: 90%;
+  padding: 12px;
+  margin: 12px;
+  border: 1px solid;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical;
+  background-color: white;
+  color: black;
+}
+
+select:focus {
+  background-color: white;
+  border: 3px solid #555;
+}
+
+option {
+  width: 90%;
+  padding: 12px;
+  margin: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  resize: vertical;
+  background-color: white;
+  color: black;
+}
+
+option:focus {
+  background-color: white;
+  border: 3px solid #555;
+}
+
+.button {
+  background-color: var(--shade) ;
+  border: none;
+  color: white;
+  padding: 1em;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 15px;
+  font-size: 16px;
+  border-radius: 50px;
+}
+
+
+
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  /* background-color: white; */
+  border: none;
+  color: black;
+  padding: 16px 32px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.errorInput{
+  border: 3px solid red;
+}
+.button:hover {
+  color: white;
+  background-color: var(--higlight);
+}
+
+.buttonPressed {
+  color: white;
+  background-color: var(--higlight);
+}
+
+#PCDisplay {
+  display: none;
+}
+
+#phoneDisplay {
+  display: none;
+}
+
+
+
+.noMargin {
+  margin: 0;
+}
+.noPadding{
+  padding: 0; 
+}
+/*----------------------------colour stuff ---------------------------- */
+
+.red {
+  background-color: #be4d25;
+}
+.green {
+  background-color: #49be25
+}
+
+.darkBlue {
+  background-color: var(--main);
+}
+
+.clear {
+  background-color: rgba(255, 255, 255, 0); /* ie Clear */
+    color: white;/*sets colour to one in *{}  */
+}
+
+.error{
+  color: #be4d25;
+}
+
+.textBlack {
+  color: black;
+}
+
+.logoImage{
+  max-height: 50px;
+  width: auto;
+}
+
+
+/* ----------------------------- Responsive edit stuff -----------------------------  */
+.hidden {
+  display: none;
+}
+/* ----------------------------- Responsive  stuff  -----------------------------  */
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+
+  p,
+  b,
+  h1,
+  h2,
+  h3 {
+    font-size: smaller;
+  }
+
+  h1 {
+    font-size: x-large;
+  }
+
+  h2,
+  h3 {
+    font-size: medium;
+  }
+
+  .profilePic {
+    margin-right: 10px;
+  }
+
+  .navBarDashTxt,
+  h2,
+  h3 {
+    font-size: medium;
+    width: 50%;
+    margin-right: 25%;
+    margin-left: 25%;
+  }
+
+  #main {
+    margin: 0;
+    min-height: 100%;
+    height: auto;
+  }
+
+  #mainLogin {
+    margin: 0;
+    height: 100%;
+    width: auto;
+  }
+
+  .profilePicContainer {
+    position: relative;
+  }
+
+  .navButton {
+    height: auto;
+    width: auto;
+    font-size: small;
+    padding: 0;
+    position: absolute;
+  }
+
+  .profilePic {
+    margin-left: 0;
+    border: 5px solid;
+    position: absolute;
+    display: block;
+    margin-right: 20px;
+  }
+
+  #backButton {
+    margin-right: 0;
+    position: absolute;
+    display: block;
+    margin-left: 20px;
+  }
+
+  .phoneTable,
+  td {
+    font-size: small;
+  }
+
+  td,
+  th {
+    font-size: small;
+  }
+
+  input {
+    font-size: small;
+  }
+
+  #PCDisplay {
+    display: none;
+  }
+
+  #phoneDisplay {
+    display: block;
+  }
+
+  .smallButton {
+    color: white;
+    background-color: var(--higlight);
+  }
+
+  .smallButton:hover {
+    color: black;
+    background-color: white;
+    border-color: white;
+  }
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+
+  p,
+  b,
+  h1,
+  h2,
+  h3 {
+    font-size: initial;
+  }
+
+  h1 {
+    font-size: xx-large;
+  }
+
+  h2,
+  h3 {
+    font-size: x-large;
+  }
+
+  .profilePic {
+    margin-left: 0;
+    border: 5px solid;
+    position: absolute;
+    display: block;
+    margin-right: 20px;
+  }
+
+  #backButton {
+    margin-right: 0;
+    position: absolute;
+    display: block;
+    margin-left: 20px;
+  }
+
+  .navBarDashTxt,
+  h2,
+  h3 {
+    font-size: medium;
+    width: 50%;
+    margin-right: 25%;
+    margin-left: 25%;
+  }
+
+  #main {
+    margin: 0;
+    margin-top: 5%;
+    min-height: 100%;
+    height: auto;
+  }
+
+  #mainLogin {
+    margin: 25%;
+    
+    width: 50%;
+  }
+
+  td,
+  th {
+    font-size: medium;
+  }
+
+  #PCDisplay {
+    display: none;
+  }
+
+  #phoneDisplay {
+    display: block;
+  }
+
+  .smallButton {
+    color: white;
+    background-color: var(--higlight);
+  }
+
+  .smallButton:hover {
+    color: black;
+    background-color: white;
+    border-color: white;
+  }
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+
+  p,
+  b,
+  h1,
+  h2,
+  h3 {
+    font-size: initial;
+  }
+
+  h1,
+  h2 {
+    font-size: xx-large;
+  }
+
+  #main {
+    margin: 5%;
+    
+  }
+
+  #mainLogin {
+    margin: 25%;
+    
+    width: 50%;
+  }
+
+  .navBarDashTxt,
+  h2,
+  h3 {
+    font-size: x-large;
+    width: 50%;
+    margin-right: 25%;
+    margin-left: 25%;
+  }
+
+  #PCDisplay {
+    display: none;
+  }
+
+  #phoneDisplay {
+    display: block;
+  }
+
+  .smallButton {
+    color: white;
+    background-color: var(--higlight);
+  }
+
+  .smallButton:hover {
+    color: black;
+    background-color: white;
+    border-color: white;
+  }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+
+  p,
+  b,
+  h1,
+  h2,
+  h3 {
+    font-size: initial;
+  }
+
+  h1,
+  h2 {
+    font-size: xx-large;
+  }
+
+  #main {
+    margin: 5%;
+    
+  }
+
+  #mainLogin {
+    margin: 25%;
+    
+  }
+
+  .navBarDashTxt,
+  h2,
+  h3 {
+    font-size: x-large;
+    width: 50%;
+    margin-right: 25%;
+    margin-left: 25%;
+  }
+
+  #PCDisplay {
+    display: block;
+  }
+
+  #phoneDisplay {
+    display: none;
+  }
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+
+  p,
+  b {
+    font-size: larger;
+  }
+
+  h1,
+  h2 {
+    font-size: xx-large;
+  }
+
+  #main {
+    margin: 10%;
+    
+  }
+
+  #mainLogin {
+    margin: 25%;
+    
+  }
+
+  .navBarDashTxt,
+  h2,
+  h3 {
+    font-size: xx-large;
+    width: 50%;
+    margin-right: 25%;
+    margin-left: 25%;
+  }
+
+  #PCDisplay {
+    display: block;
+  }
+
+  #phoneDisplay {
+    display: none;
+  }
+}
