@@ -14,6 +14,101 @@ head($pageName); // from functions.php, echoes out the head tags
 ?>
 <?php
 
+class Stage{ 
+    public $ID;
+    public $name;
+    public $weighting;	
+    public $complete;	
+    public $dateTimeCompleted;
+    public $completedBy;
+
+    public function __construct($vals,){
+        // seting varibles
+        foreach($vals as $property => $val) {
+            $this->$property = $val;
+        }
+    }
+}
+class Task{
+    public $ID;
+    public $name;	
+    public $deadline;	
+    public $priority;
+    public $stages = [];
+
+    public function __construct($vals, $con){
+        // seting varibles
+        foreach($vals as $property => $val) {
+            $this->$property = $val;
+        }
+       
+
+        // seting tasks in the task list
+        $qry = "SELECT ID, `name`, weighting, complete, dateTimeCompleted, completedBy FROM stage WHERE ID = ?;"; 
+        $stmt = $con->prepare($qry);
+        $stmt->execute([$this->ID]);
+        $this->stages = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+        //var_dump($this->stages); //test
+        foreach($this->stages as $row => $vals){
+            $this->stages[$row] = new Stage($vals,);
+
+        }
+        //echo "</br></br>";
+        //var_dump($this->stages); //test
+    }
+
+}
+
+
+class TaskList{
+    public $ID;	
+    public $name;
+    public $deadline;
+    public $collab;
+    public $priority;	
+    public $ownerID;
+    public $tasks = []; 
+
+    public function __construct($vals, $con){
+        // seting varibles
+        foreach($vals as $property => $val) {
+            $this->$property = $val;
+        }
+       
+
+        // seting tasks in the task list
+        $qry = "SELECT ID, `name`, deadline, `priority` FROM task WHERE ID = ?;"; 
+        $stmt = $con->prepare($qry);
+        $stmt->execute([$this->ID]);
+        $this->tasks = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+        //var_dump($this->tasks); //test
+        foreach($this->tasks as $row => $vals){
+            $tasks[$row] = new Task($vals, $con);
+
+        }
+        //echo "</br></br>";
+        //var_dump($this->tasks); //test
+    }
+    
+
+}
+
+$qry = "SELECT ID, `name`, deadline, collab, `priority`, ownerID  FROM taskList WHERE ownerID = ?;"; 
+$stmt = $conn->prepare($qry);
+$stmt->execute([$_SESSION["userID"]]);
+$taskLists = $stmt->fetchAll(PDO::FETCH_ASSOC);
+var_dump($taskLists); //test
+foreach($taskLists as $row => $vals){
+    $taskLists[$row] = new TaskList($vals, $conn);
+
+}
+echo "</br></br>";
+var_dump($taskLists); //test
+
+// pull all tasklists 
+// pull all tasks 
+
+
 ?>
 </head>
 
@@ -21,66 +116,22 @@ head($pageName); // from functions.php, echoes out the head tags
 <body id>
     <?php navBar(false, basename($_SERVER["PHP_SELF"]) ); ?>
     </div>
-    <div id="mainLogin">
+    <div id="main">
         <div class="tabs">
-            <button onclick="changeTab('logIn')" id="logInTab" class="tab selected first">Log In</button>
-            <button onclick="changeTab('signUp')" id="signUpTab" class="tab tab-2">Sign Up</button>
-            <button onclick="changeTab('aboutUs')"id="aboutUsTab" class="tab last">About Us</button>
+            <button onclick="changeTab('genral')" id="genralTab" class="tab first">Genral</button>
+            <button onclick="changeTab('all')" id="allTab" class="tab selected tab2">All</button>
+        </div>
+        <!-- genral taskList Code  -->
+        <div id="genralContainer"  class="hidden">
+
         </div>
 
-         <!-- Login Form  -->
-        <div id="logInContainer" class="showing">
-            <form action="index.php" method="post" id="logInForm">
+        <!-- All task lists  -->
+        <div id="allContainer" class="showing">
 
-                <div class="txtLeft"><label for="Uname">Username</label></div>
-                <input type="text" id="Uname" name="Uname" value="<?php if(isset($uname)){echo $uname;}?>"><br>
-                <div id="UnameError"></div>
-
-                <div class="txtLeft"><label for="Password">Password</label></div>
-                <input type="password" id="Password" name="Password" value="<?php if(isset($pword)){echo $pword;}?>"><br>
-                <div id="PasswordError"></div>
-
-                <input type="submit" class="button green" value="login" name="submitL">
-                <script> errorMsg(<?php if (isset($errorsL)){ echo json_encode($errorsL);} // need the json encode part ?>)  </script> 
-            </form>
-            <button class="button red">Forgot Password?</button> 
-        </div>
-
-         <!-- sign Up Form  --> 
-        <div id="signUpContainer" class="hidden">
-            <form action="index.php" method="post" id="signUpForm">
-                <div class="txtLeft"><label for="UnameSU">Username</label></div>
-                <input type="text" id="UnameSU" name="UnameSU" value="<?php if(isset($unameSU)){echo $unameSU;}?>"><br>
-                <div id="UnameSUError"></div>
-
-                <div class="txtLeft"><label for="Email">Email</label></div>
-                <input type="email" id="Email" name="Email" value="<?php if(isset($email)){echo $email;}?>"><br>
-                <div id="EmailError"></div>
-
-                <div class="txtLeft"><label for="PasswordSU">Password</label></div>
-                <input type="password" id="PasswordSU" name="PasswordSU" value="<?php if(isset($pwordSU)){echo $pwordSU;}?>"><br>
-                <div id="PasswordSUError"></div>
-
-                <div class="txtLeft"><label for="PasswordComfirm">Comfirm Password</label></div>
-                <input type="password" id="PasswordComfirm" name="PasswordComfirm" value="<?php if(isset($comfirmPword)){echo $comfirmPword;}?>"><br>
-                <div id="PasswordComfirmError"></div>
-
-                <input type="submit" class="button green" value="Sign Up!" name="submitSU">
-                <script> errorMsg(<?php if (isset($errorsSU)){ echo json_encode($errorsSU);} // need the json encode part ?>)  </script> 
-            </form>
-        </div>
-
-         <!-- About Us   --> 
-        <div id="aboutUsContainer" class="hidden">
-            <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                Quis aperiam unde ex ipsum corporis, doloribus, velit enim culpa explicabo vero,
-                amet assumenda voluptatem pariatur dolorem quae repudiandae quisquam. Maiores, 
-                inventore.
-            </p>
         </div>
         
-        <script>changeTab("<?php if (isset($currentDisplay)){ echo $currentDisplay;}else{echo "logIn";} ?>")</script>
+        <script>changeTab("<?php if (isset($currentDisplay)){ echo $currentDisplay;}else{echo "all";} ?>")</script>
                
     </div>
 

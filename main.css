@@ -189,11 +189,15 @@ body {
   left: 0;
   z-index: 3; 
 }
-.tab-2{
+.tab2{
   z-index: 2;
 }
-.last{
+.tab3{
   left: -40px;
+  z-index: 1; 
+}
+.tab4{
+  left: -60px;
   z-index: 1; 
 }
 .selected{
@@ -350,7 +354,7 @@ option:focus {
   background-color: var(--shade) ;
   border: none;
   color: white;
-  padding: 1em;
+  padding: 1%;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -393,8 +397,6 @@ input[type="reset"] {
 #phoneDisplay {
   display: none;
 }
-
-
 
 .noMargin {
   margin: 0;

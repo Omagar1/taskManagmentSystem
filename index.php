@@ -44,6 +44,7 @@ if (isset($_POST['submitL'])) {
     if ($valadationPassed){
         $msg = checkLoginData($uname, $pword, $conn); 
         $errorsL["Password"] = $msg;
+        $errorsL["Uname"] = "";
     }
 // ---------------------------------------------------- Sign Up Validation -------------------------------------------------
 } elseif (isset($_POST['submitSU'])) {
@@ -96,14 +97,14 @@ if (isset($_POST['submitL'])) {
         $valadationPassed = false;
     } elseif (strlen($pwordSU) > 20) {
         $msg = "Password Must Not Be Over 20 Characters in length";
-        $errorsSU["Password"] = $msg;
+        $errorsSU["PasswordSU"] = $msg;
         $errorsSU["PasswordComfirm"] = $msg;
         $valadationPassed = false;
     }
     // ---------- Passed Validation; passing data On to process page ----------
     if ($valadationPassed){
         $msg = createUser($unameSU, $email, $pwordSU, $conn); 
-        $errorsSU["Password"] = $msg;
+        $errorsSU["PasswordSU"] = $msg;
     }
     $currentDisplay = "signUp";
 
@@ -121,8 +122,8 @@ if (isset($_POST['submitL'])) {
     <div id="mainLogin">
         <div class="tabs">
             <button onclick="changeTab('logIn')" id="logInTab" class="tab selected first">Log In</button>
-            <button onclick="changeTab('signUp')" id="signUpTab" class="tab tab-2">Sign Up</button>
-            <button onclick="changeTab('aboutUs')"id="aboutUsTab" class="tab last">About Us</button>
+            <button onclick="changeTab('signUp')" id="signUpTab" class="tab tab2">Sign Up</button>
+            <button onclick="changeTab('aboutUs')"id="aboutUsTab" class="tab tab3">About Us</button>
         </div>
 
          <!-- Login Form  -->

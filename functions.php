@@ -257,15 +257,19 @@ function navBar($displaybuttons,$currentPageName = null){
 	<header id="header">
         <nav>
             <img class="logoImage" src = "./imagesTMS/logoNoBG.png" alt = "Logo"/>
-		    <h1>Task Managment System</h1>
+		    
             <?php 
 			if (isset($_SESSION["loggedIn"])){
 				echo"
-				<button class = 'button'>Log Out</button></li>
+				<h1>Welcome ".$_SESSION['username']."</h1>
+				<a href='LOProcess.php' class = 'button'>Log Out</a>
             	<button>Cog</button>
 				";
 			}else{
-				echo"<div></div>"; // prints empty div to centre title
+
+				echo"<h1>Task Managment System</h1>
+				<div></div>" 						// prints empty div to centre title
+				; 
 			}
 			?>
             
@@ -406,6 +410,16 @@ function footer()
 	?>
 	<footer id="footer" class="bottom">
 		<div>
+			<?php 
+				if (isset($_SESSION["loggedIn"])){
+					echo"
+					<button class='button green'>New Tasklist</button>
+					<button class='button green'>New Task</button>
+					";
+				}else{
+
+				}
+			?>
 			<p>Background image created using AI image generator from craiyon.com</p>
 		</div>
 	</footer>
