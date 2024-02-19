@@ -20,6 +20,7 @@
     --background: rgba(56, 56, 56, 1);
     --black: rgba(0, 0, 0, 1);
     --collab: rgba(124, 24, 110, 1);
+    --clear: rgba(0, 0, 0, 0)
 }
   
 * {
@@ -54,27 +55,41 @@ th {
 
 tr:nth-child(even) {
   /*Changes every over table colour makes it eiser to view */
-  background-color: #f2f2f2;
+  /* background-color: #f2f2f2; */
 }
 
-/* ----------------------------- phoneTable Table stuff  -----------------------------  */
-.phoneTableTable {
+/* ----------------------------- task stuff  -----------------------------  */
+.taskTable {
   border: none;
   border-collapse: collapse;
   width: 50%;
 }
+.taskTr{
+  background-color: var(--clear) ;
+}
 
-.phoneTableTd {
+.taskTd {
   width: auto;
   border: none;
-  color: black;
-  background-color: white;
+  background-color: var(--clear) ;
   padding: 0px;
 }
 
 .tableDisplay {
   width: 100%;
 }
+.taskContainer {
+  padding: 5%;
+  margin: 10px 10px;
+  min-height: 2cm;
+  height: auto;
+  width: auto;
+  background-color: var(--background);
+  border-radius: 5px;
+  /*display: none;/* lets java script decide what gets displayed */
+  position: relative;
+}
+
 
 /* ----------------------------- Header Stuff -----------------------------  */
 #header {
@@ -217,18 +232,7 @@ body {
   position: fixed;
 }
 
-/*----------------------------phone stuff ---------------------------- */
-.phoneTables {
-  padding: 5%;
-  margin: 10px 10px;
-  min-height: 2cm;
-  height: auto;
-  width: auto;
-  background-color: white;
-  border-radius: 5px;
-  /*display: none;/* lets java script decide what gets displayed */
-  position: relative;
-}
+
 
 /* --------------- position stuff--------------- */
 .right {

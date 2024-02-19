@@ -318,8 +318,11 @@ function yesOrNo($truthVal){
 		case 0:
 		case "0":
 		case false:
+		case null:
 		case "false":
 			return("No");
+		default:
+			return $truthVal; // ie not a truth value
 	}
 }
 // change tables 
