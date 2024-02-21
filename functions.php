@@ -236,6 +236,17 @@ function head($pageName, $extra = null){
 				containerToShow.classList.add("showing");
 				containerToShow.classList.remove("hidden");
 			}
+
+			function shiftTab(newTabID, tabsOpen, maxTabsOpen=3){
+				// Shifts tabs over so they work for css 
+				console.log(newTabID + " shift tab Ran");//test
+				var newTab = document.getElementById(newTabID + "Tab");
+				console.log(newTab);//test
+				var leftShift = -(tabsOpen * 20);
+				newTab.style.left  = leftShift + "px";
+				newTab.style.zIndex = (maxTabsOpen - tabsOpen);
+				return tabsOpen + 1;
+			}
 		</script>
 	
 	<?php
@@ -318,9 +329,10 @@ function yesOrNo($truthVal){
 		case 0:
 		case "0":
 		case false:
-		case null:
 		case "false":
 			return("No");
+		case null:
+			return("None");
 		default:
 			return $truthVal; // ie not a truth value
 	}

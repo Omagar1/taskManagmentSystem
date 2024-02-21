@@ -1,5 +1,5 @@
 :root {
-    --main: rgba(24, 110, 124, 1);
+    /* fonts */
     --bold-italic-font-family: "Inter-BoldItalic", Helvetica;
     --bold-italic-font-weight: 700;
     --bold-italic-font-size: 16px;
@@ -12,6 +12,8 @@
     --genral-letter-spacing: 0px;
     --genral-line-height: normal;
     --genral-font-style: normal;
+    /* Colours */
+    --main: rgba(24, 110, 124, 1);
     --main: rgba(24, 110, 124, 1);
     --higlight: rgba(29, 184, 204, 1);
     --complement: rgba(124, 38, 24, 1);
@@ -20,7 +22,9 @@
     --background: rgba(56, 56, 56, 1);
     --black: rgba(0, 0, 0, 1);
     --collab: rgba(124, 24, 110, 1);
-    --clear: rgba(0, 0, 0, 0)
+    --clear: rgba(0, 0, 0, 0);
+    /* other variable */
+    --tabs-open: 0; 
 }
   
 * {
@@ -53,12 +57,19 @@ th {
   text-align: center;
 }
 
-tr:nth-child(even) {
+/* tr:nth-child(even) { */
   /*Changes every over table colour makes it eiser to view */
   /* background-color: #f2f2f2; */
-}
+/* } */
 
 /* ----------------------------- task stuff  -----------------------------  */
+.taskHeader{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
 .taskTable {
   border: none;
   border-collapse: collapse;
@@ -174,17 +185,16 @@ body {
   font-family: "Bebas Neue", cursive;
   font-style: oblique;
 }
-/*----------------------------tabs stuff ---------------------------- */
+/*----------------------------tab stuff ---------------------------- */
 .tabs{
   display: flex;
   position: relative;
-  top: -30px;
+  top: -33px;
   margin-left: -10px;
   
 }
 .tab{
   position: relative;
-  left: -20px; 
   margin-left: 0;
   padding-left: 20px;
   background-color: transparent;
@@ -200,21 +210,7 @@ body {
 .tab:hover{
   border-bottom: 20px solid var(--main);
 }
-.first{
-  left: 0;
-  z-index: 3; 
-}
-.tab2{
-  z-index: 2;
-}
-.tab3{
-  left: -40px;
-  z-index: 1; 
-}
-.tab4{
-  left: -60px;
-  z-index: 1; 
-}
+
 .selected{
   border-bottom: 20px solid var(--main);
 }
@@ -411,7 +407,7 @@ input[type="reset"] {
 /*----------------------------colour stuff ---------------------------- */
 
 .red {
-  background-color: #be4d25;
+  background-color: red;
 }
 .green {
   background-color: #49be25
@@ -421,17 +417,25 @@ input[type="reset"] {
   background-color: var(--main);
 }
 
+.collabColour{
+  background-color: var(--collab);
+}
+
 .clear {
-  background-color: rgba(255, 255, 255, 0); /* ie Clear */
-    color: white;/*sets colour to one in *{}  */
+  background-color: var(--clear); 
+  border: none;
 }
 
 .error{
-  color: #be4d25;
+  color: red;
 }
 
 .textBlack {
   color: black;
+}
+
+.textWhite{
+  color: white;
 }
 
 .logoImage{
