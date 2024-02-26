@@ -158,16 +158,18 @@ function closeTaskList(taskListID){
 
 }
 
-function changePriority(elementIDToChange, updateDB=false){
+function changePriority(elementIDToChange, updatedata=null, ){
     var priorityButton = document.getElementById(elementIDToChange)
-    if(updateDB){
+    
+    if(typeof(updatedata) !== null){
         var currentPriorityIndex = priorities.indexOf(priorityButton.innerHTML.replace(" Priority",""));
+        //console.log(priorityButton.innerHTML.replace(" Priority",""))//test
     }else{
         var currentPriorityIndex = priorities.indexOf(priorityButton.value);
     }
     
     console.log(currentPriorityIndex);//test
-    console.log(priorities.length);//test
+    //console.log(priorities.length);//test
 
     if(currentPriorityIndex == (priorities.length - 1 )){
         var priorityIndexToGet = 0; 
@@ -176,8 +178,12 @@ function changePriority(elementIDToChange, updateDB=false){
     }
     console.log(priorityIndexToGet);//test
     console.log(priorities[priorityIndexToGet]);//test
-    if(updateDB){
+    if(typeof(updatedata) !== null){
         priorityButton.innerHTML = priorities[priorityIndexToGet] + " Priority";
+        // upadating the DB
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "AJAXeditRow.php?ID=" + updatedata["ID"] + "&priority=" + (priorityIndexToGet + 1)  +"&table=" + updatedata["table"], true);
+        xmlhttp.send()
     }else{
         priorityButton.value = priorities[priorityIndexToGet];
     }
@@ -218,7 +224,7 @@ function deleteTaskList(tasklistIDToDelete){
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("txtHint").innerHTML = this.responseText;
+            document.getElementById("msg").innerHTML = this.responseText;
         }
         };
         xmlhttp.open("GET", "AJAXdelete.php?ID=" + tasklistIDToDelete +"&table=tasklist", true);
@@ -368,9 +374,15 @@ foreach($taskLists as $row => $vals){
         ?>
             
             <div id="<?php echo $taskList->ID; ?>Container" class="hidden">
-                <button class="button">Deadline: <?php echo yesOrNo($taskList->deadline); ?> </button>
+                <h2 onclick = "allowEdit('name' , <?php echo $taskList->ID;?>, 'TL')" class="editButtons"><?php echo $taskList->name; ?></h2>
+                <!-- <input type = "text" id = "nameInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "nameInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('name' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->name; ?>"/> -->
+
+                
+                <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo yesOrNo($taskList->deadline); ?> </button>
+                <input type = "date" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
+                
                 <button class="button collabColour">Make Collab</button>
-                <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL', true )" class='button' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityName($taskList->priority,$priorities)." priority"?></button>
+                <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityName($taskList->priority,$priorities)." Priority"?></button>
                 <button onclick="deleteTaskList(<?php echo $taskList->ID; ?>)" class="button red">Delete</button>
 
                 <?php

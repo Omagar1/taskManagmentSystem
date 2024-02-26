@@ -62,18 +62,18 @@ function head($pageName, $extra = null){
 			}
 
 			
-			function didplaySaveButton(extra = ""){
-				var saveButton = document.getElementById("saveButton" + extra);
-				var cancelButton = document.getElementById("cancelButton" + extra);
-				saveButton.classList.remove("hidden");
-				cancelButton.classList.remove("hidden"); 
+			function didplaySaveButton(){
+				
+				var normalFooterButtons = document.getElementById("normalFooterButtons");
+				var editingFooterButtons = document.getElementById("editingFooterButtons");
+				normalFooterButtons.classList.replace("showing","hidden");
+				editingFooterButtons.classList.replace("hidden","showing");
 			}
-			function hideSaveButton(extra = ""){
-				//console.log("saveButton" + extra)
-				var saveButton = document.getElementById("saveButton" + extra);
-				var cancelButton = document.getElementById("cancelButton" + extra);
-				saveButton.classList.add("hidden");
-				cancelButton.classList.add("hidden");
+			function hideSaveButton(){
+				var normalFooterButtons = document.getElementById("normalFooterButtons");
+				var editingFooterButtons = document.getElementById("editingFooterButtons");
+				editingFooterButtons.classList.replace("showing","hidden");
+				normalFooterButtons.classList.replace("hidden","showing");
 			}
 			function displayAddButton(extra = ""){
 				var addButton = document.getElementById("addNewRowButton" + extra);
@@ -90,7 +90,7 @@ function head($pageName, $extra = null){
 			function allowEdit(columnName, IDToChange, extra = ""){
 				//console.log("I RAN")// test
 				
-				cancel() // hiding all input elements - dosent matter that it hides the buuttons as this function shows them again 
+				cancel(extra) // hiding all input elements - dosent matter that it hides the buuttons as this function shows them again 
 				// getting the elements to edit
 				editTag = "ID" + IDToChange + extra;
 				//console.log("editInputs" + editTag);//test
@@ -147,15 +147,15 @@ function head($pageName, $extra = null){
 				
 			}
 
-			function noNewRow(extra = ""){
-				// getting the elements
-				////console.log("newRow" + extra)//test
-				var newRow = document.getElementById("newRow" + extra);
-				// chnaging them
-				newRow.classList.add("hidden");
-				displayAddButton(extra);
-				hideSaveButton(extra);
-			}
+			// function noNewRow(extra = ""){
+			// 	// getting the elements
+			// 	////console.log("newRow" + extra)//test
+			// 	var newRow = document.getElementById("newRow" + extra);
+			// 	// chnaging them
+			// 	newRow.classList.add("hidden");
+			// 	displayAddButton(extra);
+			// 	hideSaveButton(extra);
+			// }
 
 			function saveAndSubmit(extra = ""){
 				// NOTE: addrow functionality it piggybacking off the edit functionality so variable names
@@ -186,7 +186,7 @@ function head($pageName, $extra = null){
 					allInputTags[i].classList.add("hidden");
 					allButtonTags[i].classList.remove("hidden");
 				}
-				noNewRow(extra) 
+				//noNewRow(extra) 
 				hideSaveButton();
 			}
 
@@ -358,19 +358,25 @@ function footer()
 {
 	?>
 	<footer id="footer" class="bottom">
-		<div>
-			<?php 
-				if (isset($_SESSION["loggedIn"])){
-					echo"
+		<?php 
+			if (isset($_SESSION["loggedIn"])){
+				echo"
+				<div id = 'normalFooterButtons' class = 'showing'>
 					<button onClick='newTaskList()'class='button green'>New Tasklist</button>
 					<button class='button green'>New Task</button>
-					";
-				}else{
+				</div>
 
-				}
-			?>
-			<p>Background image created using AI image generator from craiyon.com</p>
-		</div>
+				<div id = 'editingFooterButtons' class = 'hidden'>
+					<h2>Editting:</h2>
+					<button id = 'saveButton' class = 'button green ' onclick = 'saveAndSubmit()'>Save</button>
+					<button id = 'cancelButton' class = 'button red ' onclick = 'cancel()'>Cancel</button>
+				</div>
+				";
+			}else{
+
+			}
+		?>
+		<p>Background image created using AI image generator from craiyon.com</p>
 	</footer>
 	<?php
 }
