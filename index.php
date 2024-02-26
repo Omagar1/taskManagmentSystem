@@ -14,9 +14,9 @@ $_SESSION["previous"] = []; // initalising the Previous Stack
 $pageName = basename($_SERVER["PHP_SELF"]); // getting the name of the page so head can add it to the Previous stack
 head($pageName); // from functions.php, echoes out the head tags  
 ?>
-<script>
+<!-- <script>
     var tabsOpen = 0; 
-</script>
+</script> -->
 <?php
 $errorsL = []; // id then msg as key pair
 $errorsSU = []; // id then msg as key pair
@@ -125,11 +125,11 @@ if (isset($_POST['submitL'])) {
     <div id="mainLogin">
         <div class="tabs">
             <button onclick="changeTab('logIn')"  id="logInTab" class="tab selected ">Log In</button> 
-            <script>tabsOpen = shiftTab('logIn', tabsOpen)</script>
+            <script>shiftTab('logIn', 0)</script>
             <button onclick="changeTab('signUp')"  id="signUpTab" class="tab ">Sign Up</button>
-            <script> tabsOpen = shiftTab('signUp', tabsOpen)</script>
+            <script>shiftTab('signUp', 1)</script>
             <button onclick="changeTab('aboutUs')"  id="aboutUsTab" class="tab ">About Us</button>
-            <script> tabsOpen = shiftTab('aboutUs', tabsOpen)</script>
+            <script>shiftTab('aboutUs', 2)</script>
         </div>
 
          <!-- Login Form  -->

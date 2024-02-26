@@ -2,8 +2,9 @@
 
 
 function head($pageName, $extra = null){
+	
 	?>
-
+	
 	<head>
 		<title>Task Managment System</title>
 		<!-- Stylesheet Stuff -->
@@ -199,19 +200,21 @@ function head($pageName, $extra = null){
 			}
 
 			function errorMsg(errors){
-				console.log(errors);// test 
-				for(const [key, value] of Object.entries(errors)){ //loop through key pair
-					var i = 0;
-					//console.log(i++);//test
-					//console.log(key);//test
-					var inputTag =  document.getElementById(key);
-					var errorMsgTag = document.getElementById(key + "Error");
-					//inputTag.innerHTML = "test"; 
-					console.log(inputTag);//test
-					console.log(errorMsgTag);//test
-					inputTag.classList.add("errorInput");
-					errorMsgTag.innerHTML = "<p id = 'msg'><b class = 'error'>" + value + "</b></p>";
-					//console.log(errorMsgTag);//test
+				if(typeof(errors) !== 'undefined' ){
+					//console.log(errors);// test 
+					for(const [key, value] of Object.entries(errors)){ //loop through key pair
+						var i = 0;
+						//console.log(i++);//test
+						//console.log(key);//test
+						var inputTag =  document.getElementById(key);
+						var errorMsgTag = document.getElementById(key + "Error");
+						//inputTag.innerHTML = "test"; 
+						console.log(inputTag);//test
+						console.log(errorMsgTag);//test
+						inputTag.classList.add("errorInput");
+						errorMsgTag.innerHTML = "<p id = 'msg'><b class = 'error'>" + value + "</b></p>";
+						//console.log(errorMsgTag);//test
+					}
 				}
 			}
 
@@ -239,13 +242,15 @@ function head($pageName, $extra = null){
 
 			function shiftTab(newTabID, tabsOpen, maxTabsOpen=3){
 				// Shifts tabs over so they work for css 
-				console.log(newTabID + " shift tab Ran");//test
+				//console.log(newTabID + " shift tab Ran");//test
 				var newTab = document.getElementById(newTabID + "Tab");
-				console.log(newTab);//test
+				//console.log(newTab);//test
 				var leftShift = -(tabsOpen * 20);
 				newTab.style.left  = leftShift + "px";
 				newTab.style.zIndex = (maxTabsOpen - tabsOpen);
-				return tabsOpen + 1;
+				newTab.style.order = tabsOpen;
+				//console.log(newTab);//test
+				// return tabsOpen + 1;
 			}
 		</script>
 	
@@ -337,88 +342,17 @@ function yesOrNo($truthVal){
 			return $truthVal; // ie not a truth value
 	}
 }
-// change tables 
-// function whitchDBTable($pageFrom, $project = null){
-// 	switch($pageFrom){
-// 		case "jobs.php":
-// 			$table = "JOBS";
-// 			break;
-// 		case "employee.php":
-// 			$table = "EMPLOYEE";
-// 			break;
-// 		case "project.php":
-// 			$table = "PROJECT";
-// 			break;
-// 			case "assignment":
-// 			$table = "ASSIGNMENT";
-// 			break;
-// 	}
-// 	return $table; 
-// }
 
-// - Change tables 
-// function whitchDBColumn($ColumnName){
-// 	switch($ColumnName){
-// 		// job fields
-// 		case "jobTitle":
-// 			$column = "JOB_CLASS";
-// 			break;
-// 		case "chargePerHour":
-// 			$column = "CHG_HOUR";
-// 			break;
-// 		case "adminDefault":
-// 			$column = "ADMIN_DEFAULT";
-// 			break;
-// 		//employee fields
-// 		case "firstName":
-// 			$column = "EMP_FNAME";
-// 			break;
-// 		case "middleName":
-// 			$column = "EMP_MNAME";
-// 			break;
-// 		case "lastName":
-// 			$column = "EMP_LNAME";
-// 			break;
-// 		case "username":
-// 			$column = "EMP_USERNAME";
-// 			break;
-// 		case "password":
-// 			$column = "EMP_PASSWORD";
-// 			break;
-// 		case "jobID":  
-// 			$column = "EMP_JOB_ID";
-// 			break;
-// 		case "admin":
-// 			$column = "EMP_ADMIN";
-// 			break;
-// 		//PROJECT fields
-// 		case "projectID":
-// 			$column = "PROJ_NUM";
-// 			break;
-// 		case "projectName":
-// 			$column = "PROJ_NAME";
-// 			break;
-// 		case "expectedHours":
-// 			$column = "EXPECTED_HOURS";
-// 			break;
-// 		case "active":
-// 			$column = "ACTIVE";
-// 			break;
-// 		//ASSIGNMENT fields
-// 		case "projectIDASSIGNMENT":
-// 			$column = "PROJ_NUM";
-// 			break;
-// 		case "employeeID":
-// 			$column = "EMP_NUM";
-// 			break;
-// 		case "hours":
-// 			$column = "`HOURS`";
-// 			break;
-// 		default:
-// 			$column = false;
-// 	}
-// 	return($column); 
-// }
+function whitchDBColumn($ColumnName){
+	switch($ColumnName){
+		case "taskListName":
+			$column = "name";
+			break;
+		default:
+			$column = $ColumnName ;
+	}
+	return($column); 
+}
 
 function footer()
 {
@@ -428,7 +362,7 @@ function footer()
 			<?php 
 				if (isset($_SESSION["loggedIn"])){
 					echo"
-					<button class='button green'>New Tasklist</button>
+					<button onClick='newTaskList()'class='button green'>New Tasklist</button>
 					<button class='button green'>New Task</button>
 					";
 				}else{
