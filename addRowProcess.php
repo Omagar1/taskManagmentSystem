@@ -44,7 +44,12 @@ function addRow($addedVals, $addTable, $con){
             $stmt->bindParam($bindStr, $val);
         }
         $stmt->execute();
-        return $con->lastInsertId(); ; 
+        $lastID = $con->lastInsertId();
+        if($addTable == "task"){
+            $newStageVals = array("name" => "stage1","weighting"=>100.00,"taskID"=>$lastID);
+            addRow($newStageVals, "stage", $con);
+        }
+        return $lastID  ; 
         //var_dump($stmt); test
     } catch(PDOException $e) {
         echo "Error : ".$e->getMessage(); // dev error mesage 

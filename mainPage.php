@@ -6,6 +6,7 @@ require_once "dbConnect.php";
 // require("editRowProcess.php"); not implemented yet 
 require("addRowProcess.php");
 require "deleteRowProcess.php";
+require "editRowProcess.php"
 ?>
 
 <!DOCTYPE html>
@@ -41,22 +42,38 @@ function nameInDB($nameToCheck,$con){
 //var_dump($_POST);//test
 
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
-if (isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"] ) {
-    echo " submitNTL Ran"; //test
-    array_push($OpenTabs,"newTaskList");
-    $currentDisplay = "newTaskList";
+if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) Or (isset($_POST["tokenETL"]) And $_SESSION["tokenETL"] == $_POST["tokenETL"]) Or (isset($_POST["tokenNT"]) And $_SESSION["tokenNT"] == $_POST["tokenNT"]) ){
+    
+    //echo " submitNTL Ran"; //test
+    
     //var_dump($OpenTabs);
     $valsToValadate = $_POST;
     $errorsTL = []; // id then msg as key pair
     //var_dump($editedVals); //test 
+
+    if(isset($_POST["tokenNTL"])){
+        $endtag = "NTL";
+        array_push($OpenTabs,"newTaskList");
+        $currentDisplay = "newTaskList";
+    }elseif(isset($_POST["tokenETL"])){
+        $endtag = "";
+    }elseif(isset($_POST["tokenNT"])){
+        $endtag = "NT";
+        array_push($OpenTabs,"newTask");
+        $currentDisplay = "newTask";
+    }
     
     foreach ($valsToValadate as $column => $valToCheck){
+        unset($valsToValadate[$column]);
+        //removing the tagfrom the coloumn name
+        $column = str_replace($endtag,"",$column);
+        $valsToValadate[$column] = $valToCheck;
         //echo $column." ";//test
         if($valToCheck == "" And $column != "deadline" ){ 
             $msg = $column." Must Not Be Empty";
             $errorsTL[$column] = $msg; 
         }elseif($column == "name"){
-            if(nameInDB($nameToCheck,$con)){
+            if(nameInDB($valToCheck,$conn)){
                 $msg = $valToCheck."Task List Already exists";
                 $errorsTL[$column] = $msg; 
             }
@@ -70,11 +87,12 @@ if (isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"] ) 
         //     $errorsTL[$column] = $msg; 
         // }
     }
-    if(empty($errorsTL)){ // ie no errors so valadation passed
+    // valadation passsed
+    if(empty($errorsTL) And isset($_POST["tokenNTL"]) ){ // new task list
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$priorities) + 1; // index is used as encoded priority numeric value  
         $valsToValadate["ownerID"] = $_SESSION["userID"];
-        unset($valsToValadate["submitNTL"]);
-        unset($valsToValadate["tokenNTL"]);
+        unset($valsToValadate["submit"]);
+        unset($valsToValadate["token"]);
         //var_dump($valsToValadate); //test
         $newTaskListID = addRow($valsToValadate, "tasklist", $conn);
         // so the new taskList is opened 
@@ -86,12 +104,42 @@ if (isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"] ) 
         unset($OpenTabs[0]);
         unset($_POST);
         //var_dump( $OpenTabs);
+    }elseif(empty($errorsTL) And isset($_POST["tokenETL"])){ // edit Task List 
+        unset($valsToValadate["submitETL"]);
+        unset($valsToValadate["tokenETL"]);
+        editRow($valsToValadate, "tasklist", $conn);
+        
+        $currentDisplay = $valsToValadate["ID"];
+        // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
+        unset($valsToValadate);
+    }elseif(empty($errorsTL) And isset($_POST["tokenNT"])){ //new task
+        $valsToValadate["priority"] = array_search($valsToValadate["priority"],$priorities) + 1; // index is used as encoded priority numeric value  
+        unset($valsToValadate["submit"]);
+        unset($valsToValadate["token"]);
+
+        addRow($valsToValadate, "task", $conn);
+        // sets the current display to the task list the new task is in 
+        array_push($OpenTabs,$valsToValadate["taskListID"]);
+        $currentDisplay = $valsToValadate["taskListID"];
+        // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
+        unset($valsToValadate);
+        //close new Task List Tab
+        unset($OpenTabs[0]);
+        unset($_POST);
     }
 
 }
+//generates a random tokens to be used to check that the Post is the first request going throuh valadation, hence why its after valadation
+$tokenNTL =  md5(uniqid(rand(), true)); // for new task lists
+$tokenETL =  md5(uniqid(rand(), true)); // for editing task lists
 
-$tokenNTL =  md5(uniqid(rand(), true)); //generates a random token to be used to check that the Post is the first request going throuh valadation, hence why its after valadation
-$_SESSION["tokenNTL"] = $tokenNTL;
+$tokenNT =  md5(uniqid(rand(), true)); // for new tasks
+
+$_SESSION["tokenNTL"] = $tokenNTL; // for new task lists
+$_SESSION["tokenETL"] = $tokenETL; // for editing task lists
+
+$_SESSION["tokenNT"] = $tokenNT; // for new tasks
+
 head($pageName); // from functions.php, echoes out the head tags
 
 
@@ -103,6 +151,8 @@ var openTabsIDQueue = [];
 const maxTabsOpen = 10; 
 var currentTasklist; 
 const priorities = <?php echo json_encode($priorities);?>; // so there is one priorty list
+
+const tokenETL = "<?php echo $tokenETL ?>"
 //----------------------------------------------------Functions ----------------------------------------------------
 function openTaskList(taskListID){
     
@@ -209,10 +259,14 @@ function changePriority(elementIDToChange, updatedata=null, ){
 function newTaskList(){
     if(!openTabsIDQueue.includes("newTaskList")){ // so dubble clicks dont mess up the tab positions 
         openTaskList("newTaskList");
-    }
-
-    
+    }  
 }
+function newTask(){
+    if(!openTabsIDQueue.includes("newTask")){ // so dubble clicks dont mess up the tab positions 
+        openTaskList("newTask");
+    }  
+}
+
 
 function deleteTaskList(tasklistIDToDelete){
     
@@ -359,7 +413,7 @@ foreach($taskLists as $row => $vals){
         ?>
         <!-- Other tabs -->
         <button onclick="changeTab('newTaskList')" id="newTaskListTab" class="tab hidden">New Task List</button>
-        
+        <button onclick="changeTab('newTask')" id="newTaskTab" class="tab hidden">New Task </button>
         <!-- the all tab which is allways last -->
         <button onclick="changeTab('all')" id="allTab" class="tab selected ">All</button>
         
@@ -374,12 +428,14 @@ foreach($taskLists as $row => $vals){
         ?>
             
             <div id="<?php echo $taskList->ID; ?>Container" class="hidden">
-                <h2 onclick = "allowEdit('name' , <?php echo $taskList->ID;?>, 'TL')" class="editButtons"><?php echo $taskList->name; ?></h2>
-                <!-- <input type = "text" id = "nameInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "nameInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('name' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->name; ?>"/> -->
-
+                <div class = "taskListHeader">
+                    <h2 onclick = "allowEdit('name' , <?php echo $taskList->ID;?>, 'TL')" class="editButtons editButtonsID<?php echo $taskList->ID;?>TL"><?php echo $taskList->name; ?></h2>
+                    <!-- <input type="text" id = "nameInput<?php echo $taskList->ID;?>TL" class="inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL"> -->
+                    <input type = "text" id = "nameInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "nameInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('name' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->name; ?>"/>
+                </div>
                 
                 <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo yesOrNo($taskList->deadline); ?> </button>
-                <input type = "date" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
+                <input type = "date" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
                 
                 <button class="button collabColour">Make Collab</button>
                 <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityName($taskList->priority,$priorities)." Priority"?></button>
@@ -470,13 +526,13 @@ foreach($taskLists as $row => $vals){
                 <input type="text"name="taskListName" id="taskListName" value="<?php if(isset($valsToValadate["taskListName"])){echo $valsToValadate["taskListName"];}?>">
                 <div id="taskListNameError"></div>
 
-                <div class="txtLeft"><label for="deadline">Deadline</label></div>
-                <input type="date" min="<?php echo date("d-m-Y")?>" name="deadline" id="deadline" value="<?php if(isset($valsToValadate["deadline"])){echo $valsToValadate["deadline"];}?>">
-                <div id="deadlineError"></div>
+                <div class="txtLeft"><label for="deadlineNTL">Deadline</label></div>
+                <input type="datetime-local" min="<?php echo date("d-m-Y h:i:s")?>" name="deadlineNTL" id="deadlineNTL" value="<?php if(isset($valsToValadate["deadlineNTL"])){echo $valsToValadate["deadlineNTL"];}?>">
+                <div id="deadlineNTLError"></div>
 
-                <div class="txtLeft"><label for="priority">Priority</label></div>
-                <input onclick="changePriority('priority')" type='text' name='priority' id='priority' class='button' value="<?php if(isset($valsToValadate["priority"])){echo $valsToValadate["priority"];}else{echo'medium';}?>"readonly>
-                <div id="priorityError"></div>
+                <div class="txtLeft"><label for="priorityNTL">Priority</label></div>
+                <input onclick="changePriority('priorityNTL')" type='text' name='priorityNTL' id='priorityNTL' class='button' value="<?php if(isset($valsToValadate["priorityNTL"])){echo $valsToValadate["priorityNTL"];}else{echo'medium';}?>"readonly>
+                <div id="priorityNTLError"></div>
 
                 <input type="submit" name='submitNTL' id='submitNTL' class="green"value="Create!">
             </form>
@@ -484,6 +540,44 @@ foreach($taskLists as $row => $vals){
             <button onclick="closeTaskList('newTaskList')" class="button red">Cancle</button>
         </div>
 
+        <!-- newTask -->
+        <div id="newTaskContainer" class = "hidden">
+            <form action="mainPage.php" method="post">
+
+                <input type="hidden" name="tokenNT" value="<?php echo $tokenNT; ?>" />
+
+                <div class="txtLeft"><label for="nameNT">Task Name</label></div>
+                <input type="text"name="nameNT" id="nameNT" value="<?php if(isset($valsToValadate["nameNT"])){echo $valsToValadate["nameNT"];}?>">
+                <div id="nameNTError"></div>
+
+                <div class="txtLeft"><label for="taskListIDNT">Belongs to Task List:</label></div>
+                <select type="text"name="taskListIDNT" id="taskListIDNT">
+                <?php
+                foreach ($taskLists as $taskList){
+                    if(isset($valsToValadate["BTtaskList"]) And $taskList->ID == $valsToValadate["BTtaskList"]){
+                        echo "<option value=".$taskList->ID."selected>".$taskList->name."</option>";
+                    }else{
+                        echo "<option value=".$taskList->ID.">".$taskList->name."</option>";
+                    }
+                }
+                
+                ?>
+                </select>
+                <div id="taskListIDNTError"></div>
+
+                <div class="txtLeft"><label for="deadlineNT">Deadline</label></div>
+                <input type="datetime-local" min="<?php echo date("d-m-Y")?>" name="deadlineNT" id="deadlineNT" value="<?php if(isset($valsToValadate["deadlineNT"])){echo $valsToValadate["deadlineNT"];}?>">
+                <div id="deadlineNTError"></div>
+
+                <div class="txtLeft"><label for="priorityNT">Priority</label></div>
+                <input onclick="changePriority('priorityNT')" type='text' name='priorityNT' id='priorityNT' class='button' value="<?php if(isset($valsToValadate["priorityNT"])){echo $valsToValadate["priorityNT"];}else{echo'medium';}?>"readonly>
+                <div id="priorityNTError"></div>
+
+                <input type="submit" name='submitNT' id='submitNT' class="green"value="Create!">
+            </form>
+            <script> errorMsg(<?php if (isset($errorsT)){ echo json_encode($errorsT);} // need the json encode part ?>)  </script> 
+            <button onclick="closeTaskList('newTaskList')" class="button red">Cancle</button>
+        </div>
         <!-- All task lists  -->
         <div id="allContainer" class="showing">
             <table class = "tableDisplay">
@@ -492,7 +586,7 @@ foreach($taskLists as $row => $vals){
                         <th>Deadline</th>
                         <th>Collab</th>
                         <th>Priority</th>
-                        <th>OwnerID</th>
+                        <th>Owner</th>
                         <th></th>
                     </tr>
                 
@@ -503,8 +597,12 @@ foreach($taskLists as $row => $vals){
                         echo "<td>" . $taskList->name . "</td>";
                         echo "<td>" . yesOrNo($taskList->deadline) . "</td>";
                         echo "<td>" . yesOrNo($taskList->collab) . "</td>";
-                        echo "<td>" . $taskList->priority . "</td>";
-                        echo "<td>" . $taskList->ownerID . "</td>";
+                        echo "<td><button onclick='changePriority('priorityATL')'  id='priorityATL' class='button'>" . getPriorityName($taskList->priority, $priorities)  . "</td>";
+                        if ($taskList->ownerID == $_SESSION["userID"]){
+                            echo "<td> you </td>";
+                        }else{
+                            echo "<td>" .getNameFromID($taskList->ownerID,$conn). "</td>";
+                        } 
                         echo"<td>
                             <button onClick='openTaskList(".$taskList->ID.")' id='openButton".$taskList->ID."' class='button green'>Open?</button>
                             <button onClick='closeTaskList(".$taskList->ID.")' id='closeButton".$taskList->ID."' class='button red hidden'>Close?</button>

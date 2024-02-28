@@ -45,7 +45,8 @@ function head($pageName, $extra = null){
 			// NOTE: addrow functionality is piggybacking off the edit functionality so variable names
 			// should be more like addOrEditrowID but that would get confusing so just sticking withe exixting names
 			var editedRowID; // global var
-			var editedColumns = []; 
+			var editedColumns = []; // global var
+			var typeEditing ; // global var
 			//old 
 			// function addToEditObject(IDVal, columnVal){
 			// 	var editedEntry = {
@@ -93,17 +94,18 @@ function head($pageName, $extra = null){
 				cancel(extra) // hiding all input elements - dosent matter that it hides the buuttons as this function shows them again 
 				// getting the elements to edit
 				editTag = "ID" + IDToChange + extra;
-				//console.log("editInputs" + editTag);//test
+				console.log("editInputs" + editTag);//test
 				var allEditInputTags = document.getElementsByClassName("editInputs" + editTag);
 				var allEditButtonTags = document.getElementsByClassName("editButtons" + editTag);
-				// console.log(allEditInputTags); //test
-				// console.log(allEditButtonTags); //test
+				console.log(allEditInputTags); //test
+				console.log(allEditButtonTags); //test
 				// showing only the ones clicked 
 				for (let i = 0; i < allEditInputTags.length; i++) {
 					allEditButtonTags[i].classList.add("hidden");
 					allEditInputTags[i].classList.remove("hidden");
 				}
-				editedRowID = IDToChange; // so saveAndSubit() knows what row to update in the DB 
+				editedRowID = IDToChange; // so saveAndSubit() knows what row to update in the DB
+				typeEditing = extra;
 				addToEditedColumns(columnName)
 				//console.log(columnName);
 				//old
@@ -161,13 +163,14 @@ function head($pageName, $extra = null){
 				// NOTE: addrow functionality it piggybacking off the edit functionality so variable names
 				// should be more like addOrEditrowID but that would get confusing so just sticking withe exixting names
 				var editedRowValues = new Map();
-				editedRowValues.set("ID", editedRowID); 
+				editedRowValues.set("ID", editedRowID);
+				console.log("Edited row Id: " + editedRowID) ;//test
 				//var editedRow = document.getElementsByClassName("editInputsID" + editedRowID);
 				for (let i = 0; i < editedColumns.length; i++) {
 					var tagToGrab = editedColumns[i] + "Input" + editedRowID + extra;
 					//console.log(tagToGrab);//test
 					var editedValElement = document.getElementById(tagToGrab);
-					//console.log(editedValElement)//test 
+					console.log(editedValElement)//test 
 					if (editedValElement.tagName == "select"){
 						editedVal = editedValElement.options[editedValElement.selectedIndex].value;
 					}else{
@@ -175,6 +178,7 @@ function head($pageName, $extra = null){
 					}
 					editedRowValues.set(editedColumns[i], editedVal); 
 				}
+				editedRowValues.set("tokenETL", tokenETL); 
 				post("<?php echo $pageName; ?>", editedRowValues); 
 			}
 			
@@ -220,6 +224,7 @@ function head($pageName, $extra = null){
 
 			function changeTab(tagToChangeTo){
 				// get selected tab, remove selected class
+				console.log("tagToChangeTo: "+ tagToChangeTo);
 				var selectedTab = document.getElementsByClassName("selected");
 				//console.log(selectedTab);//test
 				selectedTab[0].classList.remove("selected"); // [0] as getElementsByClassName returns a list of 1
@@ -242,7 +247,7 @@ function head($pageName, $extra = null){
 
 			function shiftTab(newTabID, tabsOpen, maxTabsOpen=3){
 				// Shifts tabs over so they work for css 
-				//console.log(newTabID + " shift tab Ran");//test
+				console.log(newTabID + " shift tab Ran");//test
 				var newTab = document.getElementById(newTabID + "Tab");
 				//console.log(newTab);//test
 				var leftShift = -(tabsOpen * 20);
@@ -302,7 +307,7 @@ function notLoggedIn(){
 	if (!isset($_SESSION["loggedIn"]) and ($_SESSION["loggedIn"] != true)) {
 		header("location: logout.php"); // if so redirects the user  to the logout page as to unset any sessions they may have set already. 
 	}									// this will then send the user to the login page 
-	;
+	
 }
 
 // function destroyUnwantedSession($pageName){
@@ -354,6 +359,13 @@ function whitchDBColumn($ColumnName){
 	return($column); 
 }
 
+function getNameFromID($ID,$con){
+	$qry = "SELECT `name` FROM user WHERE ID = ?"; 
+	$stmt = $con->prepare($qry);
+    $stmt->execute($ID);
+	return implode($stmt->fetch(PDO::FETCH_ASSOC));
+}
+
 function footer()
 {
 	?>
@@ -362,13 +374,13 @@ function footer()
 			if (isset($_SESSION["loggedIn"])){
 				echo"
 				<div id = 'normalFooterButtons' class = 'showing'>
-					<button onClick='newTaskList()'class='button green'>New Tasklist</button>
-					<button class='button green'>New Task</button>
+					<button onclick='newTaskList()'class='button green'>New Tasklist</button>
+					<button onclick='newTask()' class='button green'>New Task</button>
 				</div>
 
 				<div id = 'editingFooterButtons' class = 'hidden'>
 					<h2>Editting:</h2>
-					<button id = 'saveButton' class = 'button green ' onclick = 'saveAndSubmit()'>Save</button>
+					<button id = 'saveButton' class = 'button green ' onclick = 'saveAndSubmit(typeEditing)'>Save</button>
 					<button id = 'cancelButton' class = 'button red ' onclick = 'cancel()'>Cancel</button>
 				</div>
 				";
