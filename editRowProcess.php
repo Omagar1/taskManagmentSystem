@@ -28,7 +28,7 @@ function editRow($editedVals, $editTable, $con){
         }
         //echo $qry; //test
         $stmt->execute();
-        //var_dump($stmt); test
+        var_dump($stmt); //test
         return true; 
     } catch(PDOException $e) {
         echo "Error : ".$e->getMessage(); // dev error mesage 

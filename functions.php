@@ -178,7 +178,12 @@ function head($pageName, $extra = null){
 					}
 					editedRowValues.set(editedColumns[i], editedVal); 
 				}
-				editedRowValues.set("tokenETL", tokenETL); 
+				if(extra == "TL" ){
+					editedRowValues.set("tokenETL", tokenETL);
+				}else if(extra == "TK" ){
+					editedRowValues.set("tokenETK", tokenETK);
+				}
+				 
 				post("<?php echo $pageName; ?>", editedRowValues); 
 			}
 			

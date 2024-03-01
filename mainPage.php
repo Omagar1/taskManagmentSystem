@@ -39,12 +39,11 @@ function nameInDB($nameToCheck,$con){
       }
 }
 
-//var_dump($_POST);//test
-
+var_dump($_POST);//test
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
-if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) Or (isset($_POST["tokenETL"]) And $_SESSION["tokenETL"] == $_POST["tokenETL"]) Or (isset($_POST["tokenNT"]) And $_SESSION["tokenNT"] == $_POST["tokenNT"]) ){
+if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) Or (isset($_POST["tokenETL"]) And $_SESSION["tokenETL"] == $_POST["tokenETL"]) Or (isset($_POST["tokenNTK"]) And $_SESSION["tokenNTK"] == $_POST["tokenNTK"] Or (isset($_POST["tokenETK"]) And $_SESSION["tokenETK"] == $_POST["tokenETK"]) )){
     
-    //echo " submitNTL Ran"; //test
+    echo " valadation Ran"; //test
     
     //var_dump($OpenTabs);
     $valsToValadate = $_POST;
@@ -57,11 +56,16 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         $currentDisplay = "newTaskList";
     }elseif(isset($_POST["tokenETL"])){
         $endtag = "";
-    }elseif(isset($_POST["tokenNT"])){
-        $endtag = "NT";
+    }elseif(isset($_POST["tokenNTK"])){
+        $endtag = "NTK";
+        array_push($OpenTabs,"newTask");
+        $currentDisplay = "newTask";
+    }elseif(isset($_POST["tokenETK"])){
+        $endtag = "ETK";
         array_push($OpenTabs,"newTask");
         $currentDisplay = "newTask";
     }
+    
     
     foreach ($valsToValadate as $column => $valToCheck){
         //removing the tagfrom the coloumn name
@@ -118,7 +122,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         $currentDisplay = $valsToValadate["ID"];
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
-    }elseif(empty($errorsTL) And isset($_POST["tokenNT"])){ //new task
+    }elseif(empty($errorsTL) And isset($_POST["tokenNTK"])){ //new task
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$priorities) + 1; // index is used as encoded priority numeric value  
         unset($valsToValadate["submit"]);
         unset($valsToValadate["token"]);
@@ -132,6 +136,15 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         //close new Task List Tab
         unset($OpenTabs[0]);
         unset($_POST);
+    }elseif(empty($errorsTL) And isset($_POST["tokenETK"])){ //editing task
+        echo "edit tasks Ran";// test
+        unset($valsToValadate["submit"]);
+        unset($valsToValadate["token"]);
+        editRow($valsToValadate, "task", $conn);
+        
+        //$currentDisplay = $result["tasklistID"];
+        // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
+        unset($valsToValadate);
     }
 
 }
@@ -139,12 +152,14 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
 $tokenNTL =  md5(uniqid(rand(), true)); // for new task lists
 $tokenETL =  md5(uniqid(rand(), true)); // for editing task lists
 
-$tokenNT =  md5(uniqid(rand(), true)); // for new tasks
+$tokenNTK =  md5(uniqid(rand(), true)); // for new tasks
+$tokenETK =  md5(uniqid(rand(), true)); // for editing tasks
 
 $_SESSION["tokenNTL"] = $tokenNTL; // for new task lists
 $_SESSION["tokenETL"] = $tokenETL; // for editing task lists
 
-$_SESSION["tokenNT"] = $tokenNT; // for new tasks
+$_SESSION["tokenNTK"] = $tokenNTK; // for new tasks
+$_SESSION["tokenETK"] = $tokenETK; // for editing task 
 
 head($pageName); // from functions.php, echoes out the head tags
 
@@ -159,6 +174,7 @@ var currentTasklist;
 const priorities = <?php echo json_encode($priorities);?>; // so there is one priorty list
 
 const tokenETL = "<?php echo $tokenETL ?>"
+const tokenETK = "<?php echo $tokenETK ?>"
 //----------------------------------------------------Functions ----------------------------------------------------
 function openTaskList(taskListID){
     
@@ -496,7 +512,7 @@ foreach($taskLists as $row => $vals){
                                     </td>
                                     <td class="taskTd tableDisplay">
                                         <p class="editButtons editButtonsID<?php echo $task->ID;?>TK"><?php echo $task->deadline;?></p>
-                                        <input onclick = "allowEdit('deadline' , <?php echo $task->ID;?>,'TK')" type = "text" id = "deadlineInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $task->ID;?>TK" name = "deadlineInput<?php echo $task->ID;?>TK"  value = "<?php echo $task->name; ?>"/>
+                                        <input onclick = "allowEdit('deadline' , <?php echo $task->ID;?>,'TK')" type = "text" id = "deadlineInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $task->ID;?>TK" name = "deadlineInput<?php echo $task->ID;?>TK"  value = "<?php echo $task->deadline; ?>"/>
                                         <div id="deadlineTKError"></div>
 
                                     </td>
@@ -563,7 +579,7 @@ foreach($taskLists as $row => $vals){
         <div id="newTaskContainer" class = "hidden">
             <form action="mainPage.php" method="post">
 
-                <input type="hidden" name="tokenNT" value="<?php echo $tokenNT; ?>" />
+                <input type="hidden" name="tokenNTK" value="<?php echo $tokenNTK; ?>" />
 
                 <div class="txtLeft"><label for="nameNT">Task Name</label></div>
                 <input type="text"name="nameNT" id="nameNT" value="<?php if(isset($valsToValadate["nameNT"])){echo $valsToValadate["nameNT"];}?>">
