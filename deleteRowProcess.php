@@ -1,7 +1,7 @@
 <?php
 function deleteID($IDTodelete, $deleteFromTable, $con, $whereCondition="ID"){
     try{
-        echo "Delete ID Ran with ID: ".$IDTodelete; 
+        //echo "Delete ID Ran with ID: ".$IDTodelete; //test
         // bulding a Qry
         $qry = "DELETE FROM " . $deleteFromTable. " WHERE " . $whereCondition ." = ?;";
         $stmt = $con->prepare($qry);

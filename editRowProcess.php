@@ -26,6 +26,7 @@ function editRow($editedVals, $editTable, $con){
             //echo $val;//test
             $stmt->bindParam($bindStr, $val);
         }
+        //echo $qry; //test
         $stmt->execute();
         //var_dump($stmt); test
         return true; 

@@ -328,7 +328,7 @@ function errorMsg($msg){
 }
 
 function yesOrNo($truthVal){
-	// turns a true false or 1, 0 value into a yes or no value
+	// turns a true false or 1, 0 value into a yes or no value if there is a non boolean value it returns th value 
 	switch($truthVal){
 		case 1:
 		case "1":
@@ -341,8 +341,10 @@ function yesOrNo($truthVal){
 		case false:
 		case "false":
 			return("No");
+			// no Break as it returns
 		case null:
 			return("None");
+			// no Break as it returns
 		default:
 			return $truthVal; // ie not a truth value
 	}

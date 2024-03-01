@@ -64,10 +64,11 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
     }
     
     foreach ($valsToValadate as $column => $valToCheck){
-        unset($valsToValadate[$column]);
         //removing the tagfrom the coloumn name
+        unset($valsToValadate[$column]);
         $column = str_replace($endtag,"",$column);
         $valsToValadate[$column] = $valToCheck;
+
         //echo $column." ";//test
         if($valToCheck == "" And $column != "deadline" ){ 
             $msg = $column." Must Not Be Empty";
@@ -88,11 +89,16 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         // }
     }
     // valadation passsed
+    //removing the defult value of dedline as it should be stored as null
+    //var_dump($valsToValadate["deadline"]);//test
+    if(isset($valsToValadate["deadline"]) And ($valsToValadate["deadline"] == "0000-00-00 00:00:00" Or $valsToValadate["deadline"] == "" )){
+        $valsToValadate["deadline"] = null;// must be set as so you can remove a deadline
+    }
     if(empty($errorsTL) And isset($_POST["tokenNTL"]) ){ // new task list
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$priorities) + 1; // index is used as encoded priority numeric value  
         $valsToValadate["ownerID"] = $_SESSION["userID"];
         unset($valsToValadate["submit"]);
-        unset($valsToValadate["token"]);
+        unset($valsToValadate["token"]); 
         //var_dump($valsToValadate); //test
         $newTaskListID = addRow($valsToValadate, "tasklist", $conn);
         // so the new taskList is opened 
@@ -169,7 +175,7 @@ function openTaskList(taskListID){
     changeTab(taskListID); 
     // console.log(taskListID);//test
     // console.log(taskListID != "newTaskList"); //test
-    if (taskListID != "all" && taskListID != "newTaskList" ){//change open tab button to close
+    if (taskListID != "all" && taskListID != "newTaskList" && taskListID != "newTask" ){//change open tab button to close
         document.getElementById("openButton"+taskListID).classList.add("hidden");
         document.getElementById("closeButton"+taskListID).classList.remove("hidden");
     }
@@ -187,7 +193,7 @@ function closeTaskList(taskListID){
     //change view
     changeTab("all"); 
     //change close tab button to open
-    if (taskListID != "all" && taskListID != "newTaskList" ){//change open tab button to close
+    if (taskListID != "all" && taskListID != "newTaskList" && taskListID != "newTask" ){//change open tab button to close
         document.getElementById("openButton"+taskListID).classList.remove("hidden");
         document.getElementById("closeButton"+taskListID).classList.add("hidden");
     }
@@ -208,10 +214,17 @@ function closeTaskList(taskListID){
 
 }
 
-function changePriority(elementIDToChange, updatedata=null, ){
+function hideTask(IDtoHide){
+    document.getElementById("task" + IDtoHide).classList.add("hidden");
+}
+
+function changePriority(elementIDToChange, updateData=null, ){
     var priorityButton = document.getElementById(elementIDToChange)
-    
-    if(typeof(updatedata) !== null){
+    // the state of updateData is used as a boolean to see if upadating the DB is wanted 
+    console.log("updateDate: "+ updateData); //test
+    console.log("typeof(updateData): "+ typeof(updateData));
+
+    if(typeof(updateData) != null){
         var currentPriorityIndex = priorities.indexOf(priorityButton.innerHTML.replace(" Priority",""));
         //console.log(priorityButton.innerHTML.replace(" Priority",""))//test
     }else{
@@ -228,11 +241,11 @@ function changePriority(elementIDToChange, updatedata=null, ){
     }
     console.log(priorityIndexToGet);//test
     console.log(priorities[priorityIndexToGet]);//test
-    if(typeof(updatedata) !== null){
+    if(typeof(updateData) != null){
         priorityButton.innerHTML = priorities[priorityIndexToGet] + " Priority";
         // upadating the DB
         var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", "AJAXeditRow.php?ID=" + updatedata["ID"] + "&priority=" + (priorityIndexToGet + 1)  +"&table=" + updatedata["table"], true);
+        xmlhttp.open("GET", "AJAXeditRow.php?ID=" + updateData["ID"] + "&priority=" + (priorityIndexToGet + 1)  +"&table=" + updateData["table"], true);
         xmlhttp.send()
     }else{
         priorityButton.value = priorities[priorityIndexToGet];
@@ -268,20 +281,26 @@ function newTask(){
 }
 
 
-function deleteTaskList(tasklistIDToDelete){
+function useAJAXdelete(IDToDelete,tableFrom){
     
     if (confirm("are you sure?")) {
         //visual 
-        closeTaskList(tasklistIDToDelete);// if open 
-        document.getElementById("allRow"+tasklistIDToDelete).classList.add("hidden");
+        if(tableFrom == "tasklist"){
+            closeTaskList(IDToDelete);// if open 
+            document.getElementById("allRow"+IDToDelete).classList.add("hidden");
+        }else if(tableFrom == "task"){
+            hideTask(IDToDelete);
+        }
+        
         //from data base - using ajax 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-            document.getElementById("msg").innerHTML = this.responseText;
+            // document.getElementById("msg").innerHTML = this.responseText;
+            console.log("delete responce: "+this.responseText)
         }
         };
-        xmlhttp.open("GET", "AJAXdelete.php?ID=" + tasklistIDToDelete +"&table=tasklist", true);
+        xmlhttp.open("GET", "AJAXdelete.php?ID=" + IDToDelete + "&table=" + tableFrom, true);
         xmlhttp.send()
     } 
     
@@ -324,7 +343,7 @@ class Task{
        
 
         // seting tasks in the task list
-        $qry = "SELECT ID, `name`, weighting, complete, dateTimeCompleted, completedBy FROM stage WHERE taskID = ?;"; 
+        $qry = "SELECT ID, `name`, weighting, complete, dateTimeCompleted, completedBy FROM stage WHERE taskID = ?;";
         $stmt = $con->prepare($qry);
         $stmt->execute([$this->ID]);
         $this->stages = $stmt->fetchAll(PDO::FETCH_ASSOC); 
@@ -420,7 +439,7 @@ foreach($taskLists as $row => $vals){
         <!-- <script>openTabsIDQueue.length = shiftTab('all', openTabsIDQueue.length) -1 // so add is not counted as a tab </script> -->
         </div>
 
-        <!-- genral taskList Code  -->
+        <!--  taskList Code  -->
         <?php
             foreach($taskLists as $taskList){
                 // echo "test1: ". $taskList->ID;
@@ -430,32 +449,34 @@ foreach($taskLists as $row => $vals){
             <div id="<?php echo $taskList->ID; ?>Container" class="hidden">
                 <div class = "taskListHeader">
                     <h2 onclick = "allowEdit('name' , <?php echo $taskList->ID;?>, 'TL')" class="editButtons editButtonsID<?php echo $taskList->ID;?>TL"><?php echo $taskList->name; ?></h2>
-                    <!-- <input type="text" id = "nameInput<?php echo $taskList->ID;?>TL" class="inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL"> -->
                     <input type = "text" id = "nameInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "nameInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('name' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->name; ?>"/>
                 </div>
                 
-                <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo yesOrNo($taskList->deadline); ?> </button>
-                <input type = "date" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
+                <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo (isset($taskList->deadline))? $taskList->deadline : "none"  ?> </button>
+                <input type = "datetime-local" min = "<?php date("d-m-Y h:i:s")?>" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
                 
                 <button class="button collabColour">Make Collab</button>
                 <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityName($taskList->priority,$priorities)." Priority"?></button>
-                <button onclick="deleteTaskList(<?php echo $taskList->ID; ?>)" class="button red">Delete</button>
+                <button onclick="useAJAXdelete(<?php echo $taskList->ID; ?>, 'tasklist')" class="button red">Delete</button>
 
                 <?php
                 // ------------- tasks -------------
                 if(count($taskList->tasks) == 0){
                     echo "<br/>WOW such emptiness<br/> ";
-                    echo"<button class='button green'>New Task</button>";
+                    echo"<button onclick='newTask()' class='button green'>New Task</button>";
                 }else{
                     foreach($taskList->tasks as $task){
                         //echo"I Ran";//test
                 ?>
-                        <div id="<?php echo $task->ID; ?>" class="taskContainer">
+                        <div id="task<?php echo $task->ID;?>" class="taskContainer">
                             <div class="taskHeader">
-                                <h2><?php echo $task->name;?></h2>
-                                <button  class="clear" >edit</button>
-                                <button  class="clear">MakeRepeat</button>
-                                <button class="clear">X</button>
+                                <h2 class="editButtons editButtonsID<?php echo $task->ID;?>TK"><?php echo $task->name;?></h2>
+                                <input  onclick = "allowEdit('name' , <?php echo $task->ID;?>,'TK')" type = "text" id = "nameInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $task->ID;?>TK" name = "nameInput<?php echo $task->ID;?>TK"  value = "<?php echo $task->name; ?>"/>
+                                <div id="nameTKError"></div>
+
+                                <button onclick = "allowEdit('name' , <?php echo $task->ID;?>,'TK')"  class="clear button" >edit</button>
+                                <!-- <button  class="clear">MakeRepeat</button> -->
+                                <button onclick="useAJAXdelete(<?php echo $task->ID;?>,'task')" class="clear button">X</button>
                             </div>
 
                             <table class="taskTable">
@@ -464,7 +485,9 @@ foreach($taskLists as $row => $vals){
                                         priority
                                     </td>
                                     <td class="taskTd tableDisplay">
-                                        <button class="button green"><?php echo $task->priority;?></button>
+                                        <button onclick="changePriority('<?php echo $task->ID; ?>priorityTL',{ID: '<?php echo $task->ID; ?>',table: 'task'} )" class='button' id="<?php echo $task->ID; ?>priorityTL"><?php echo getPriorityName($task->priority,$priorities)." Priority"?></button>
+                                        <div id="priorityTKError"></div>
+
                                     </td>
                                 </tr>
                                 <tr class="taskTr">
@@ -472,7 +495,10 @@ foreach($taskLists as $row => $vals){
                                         deadline
                                     </td>
                                     <td class="taskTd tableDisplay">
-                                        <?php echo $task->deadline;?>
+                                        <p class="editButtons editButtonsID<?php echo $task->ID;?>TK"><?php echo $task->deadline;?></p>
+                                        <input onclick = "allowEdit('deadline' , <?php echo $task->ID;?>,'TK')" type = "text" id = "deadlineInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $task->ID;?>TK" name = "deadlineInput<?php echo $task->ID;?>TK"  value = "<?php echo $task->name; ?>"/>
+                                        <div id="deadlineTKError"></div>
+
                                     </td>
                                 </tr>
 
@@ -483,26 +509,19 @@ foreach($taskLists as $row => $vals){
                                     <th class="clear textWhite"><b>Stages</b></th>
                                     <th class="clear textWhite"><b>weighting</b></th>
                                 </tr>
-                                <?php
-                            
-                                foreach($task->stages as $stage){
-                                    echo"
+                                <?php foreach($task->stages as $stage):?>
                                     <tr>
                                         <td class='clear'>
-                                            ".$stage->name."
+                                            <?php echo $stage->name?>
                                         </td>
                                         <td class='clear'>
-                                            ".$stage->weighting."%
+                                            <?php echo $stage->weighting?>
                                         </td>
                                         <td class='clear'>
-                                            ".yesOrNo($stage->complete)."
+                                            <?php echo yesOrNo($stage->complete)?>
                                         </td>
                                     </tr>
-                                    ";
-                                    
-                                }
-                            
-                                ?>
+                                <?php endforeach ?>
                             </table>
                                 
                             
@@ -566,7 +585,7 @@ foreach($taskLists as $row => $vals){
                 <div id="taskListIDNTError"></div>
 
                 <div class="txtLeft"><label for="deadlineNT">Deadline</label></div>
-                <input type="datetime-local" min="<?php echo date("d-m-Y")?>" name="deadlineNT" id="deadlineNT" value="<?php if(isset($valsToValadate["deadlineNT"])){echo $valsToValadate["deadlineNT"];}?>">
+                <input type="datetime-local" min="<?php echo date("d-m-Y h:i:s")?>" name="deadlineNT" id="deadlineNT" value="<?php if(isset($valsToValadate["deadlineNT"])){echo $valsToValadate["deadlineNT"];}?>">
                 <div id="deadlineNTError"></div>
 
                 <div class="txtLeft"><label for="priorityNT">Priority</label></div>
@@ -590,27 +609,19 @@ foreach($taskLists as $row => $vals){
                         <th></th>
                     </tr>
                 
-                <?php
-                    foreach($taskLists as $taskList){ 
-                        //var_dump($taskList); //test
-                        echo"<tr id='allRow".$taskList->ID."'>";
-                        echo "<td>" . $taskList->name . "</td>";
-                        echo "<td>" . yesOrNo($taskList->deadline) . "</td>";
-                        echo "<td>" . yesOrNo($taskList->collab) . "</td>";
-                        echo "<td><button onclick='changePriority('priorityATL')'  id='priorityATL' class='button'>" . getPriorityName($taskList->priority, $priorities)  . "</td>";
-                        if ($taskList->ownerID == $_SESSION["userID"]){
-                            echo "<td> you </td>";
-                        }else{
-                            echo "<td>" .getNameFromID($taskList->ownerID,$conn). "</td>";
-                        } 
-                        echo"<td>
-                            <button onClick='openTaskList(".$taskList->ID.")' id='openButton".$taskList->ID."' class='button green'>Open?</button>
-                            <button onClick='closeTaskList(".$taskList->ID.")' id='closeButton".$taskList->ID."' class='button red hidden'>Close?</button>
-                            </td>";
-                        echo"</tr>";
-                    }
-                ?>
-                
+                <?php foreach($taskLists as $taskList): ?> 
+                        <tr id='allRow".$taskList->ID."'> 
+                            <td><?php echo $taskList->name ?></td>
+                            <td><?php echo yesOrNo($taskList->deadline) ?></td>
+                            <td><?php echo yesOrNo($taskList->collab) ?></td>
+                            <td><button onclick="changePriority('priority<?php echo $taskList->ID ?>ATL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'})"  id='priority<?php echo $taskList->ID ?>ATL' class='button'><?php echo getPriorityName($taskList->priority, $priorities)  ?></td>
+                            <td><?php echo ($taskList->ownerID == $_SESSION["userID"])? "you" : getNameFromID($taskList->ownerID,$conn) ?></td>
+                            <td>
+                                <button onclick='openTaskList("<?php echo $taskList->ID ?>")' id='openButton<?php echo $taskList->ID ?>' class='button green'>Open?</button>
+                                <button onclick='closeTaskList("<?php echo $taskList->ID ?>")' id='closeButton<?php echo $taskList->ID ?>' class='button red hidden'>Close?</button>
+                            </td>
+                        </tr>";
+                <?php endforeach ?>
             </table>
         </div>
         
@@ -628,7 +639,7 @@ foreach($taskLists as $row => $vals){
     </div>
 
 
-    <?php footer(); ?>
+    
 </body>
-
+<?php footer(); ?>
 </html>
