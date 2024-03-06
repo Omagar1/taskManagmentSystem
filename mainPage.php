@@ -259,10 +259,9 @@ function changePriority(elementIDToChange, updateData=null, ){
     console.log(priorities[priorityIndexToGet]);//test
     if(typeof(updateData) != null){
         priorityButton.innerHTML = priorities[priorityIndexToGet] + " Priority";
-        // upadating the DB
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.open("GET", "AJAXeditRow.php?ID=" + updateData["ID"] + "&priority=" + (priorityIndexToGet + 1)  +"&table=" + updateData["table"], true);
-        xmlhttp.send()
+        //db stuff
+        var dataToDB = {ID: updateData["ID"], priority: priorityIndexToGet++, table: updateData["table"]}; 
+        useAJAXedit(dataToDB);
     }else{
         priorityButton.value = priorities[priorityIndexToGet];
     }
@@ -295,6 +294,26 @@ function newTask(){
         openTaskList("newTask");
     }  
 }
+function useAJAXedit(editData){
+        var editDataString = ""; 
+        for(const [key, value] of Object.entries(editData)){
+            editDataString = editDataString + key +"="+ value+"&";
+        }
+        editDataString = editDataString.slice(0, -1); // removeing last & so no errors
+        
+        console.log("editDataString: " + editDataString) //test
+        // upadating the DB
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            console.log("edit responce: "+this.responseText)
+        }
+        };
+    
+        
+        xmlhttp.open("GET", "AJAXeditRow.php?" + editDataString , true);
+        xmlhttp.send()
+}
 
 
 function useAJAXdelete(IDToDelete,tableFrom){
@@ -317,10 +336,11 @@ function useAJAXdelete(IDToDelete,tableFrom){
         }
         };
         xmlhttp.open("GET", "AJAXdelete.php?ID=" + IDToDelete + "&table=" + tableFrom, true);
-        xmlhttp.send()
+        xmlhttp.send();
     } 
-    
-    
+}
+
+function completeStage(ID, currentVal){
 
 }
 
@@ -520,11 +540,20 @@ foreach($taskLists as $row => $vals){
 
                             </table>
                             <!-- ------------- stages ------------- -->
+                            <?php if(count($task->stages)== 1):?>
+                                <div>
+                                    <p>Completed:</p>
+                                    
+                                </div>
+                            <?php else: ?>
+
+                            <?php endif;?>
                             <table class="clear">
                                 <tr>
                                     <th class="clear textWhite"><b>Stages</b></th>
                                     <th class="clear textWhite"><b>weighting</b></th>
                                 </tr>
+                                
                                 <?php foreach($task->stages as $stage):?>
                                     <tr>
                                         <td class='clear'>
@@ -534,7 +563,10 @@ foreach($taskLists as $row => $vals){
                                             <?php echo $stage->weighting?>
                                         </td>
                                         <td class='clear'>
-                                            <?php echo yesOrNo($stage->complete)?>
+                                            <button onclick="completeStage(<?php echo $stage->ID?>, <?php echo $stage->complete?>)" id="completed<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
+                                        </td>
+                                        <td class='clear'>
+                                            <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage')" class="button red">x</button>
                                         </td>
                                     </tr>
                                 <?php endforeach ?>

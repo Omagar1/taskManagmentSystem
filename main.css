@@ -377,6 +377,23 @@ option:focus {
   border-radius: 50px;
 }
 
+.stageButton{
+  background-color: white ;
+  border: solid black;
+  color: white;
+  padding: 10%;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 15px;
+  font-size: 16px;
+  border-radius: 50px;
+  box-sizing: border-box;
+  padding-left: 20%;
+  padding-right: 20%;
+}
+
+
 
 
 
