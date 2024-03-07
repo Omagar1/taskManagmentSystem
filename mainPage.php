@@ -14,11 +14,12 @@ require "editRowProcess.php"
 <?php
 
 // $_SESSION["previous"] = []; // initalising the Previous Stack
-$priorities = ["high","medium","low"]; 
+$prioritiesName = ["high","medium","low"]; 
+$prioritiesColour = ["red","","green"]; // medium has no colour as it uses the default colour of the element
 $pageName = basename($_SERVER["PHP_SELF"]); // getting the name of the page so head can add it to the Previous stack
 $_SESSION["currentPage"] = $pageName; 
 
-function getPriorityName($PriorityVal, $priorities){
+function getPriorityVal($PriorityVal, $priorities,){
     return $priorities[$PriorityVal-1];
 }
 
@@ -99,7 +100,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         $valsToValadate["deadline"] = null;// must be set as so you can remove a deadline
     }
     if(empty($errorsTL) And isset($_POST["tokenNTL"]) ){ // new task list
-        $valsToValadate["priority"] = array_search($valsToValadate["priority"],$priorities) + 1; // index is used as encoded priority numeric value  
+        $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         $valsToValadate["ownerID"] = $_SESSION["userID"];
         unset($valsToValadate["submit"]);
         unset($valsToValadate["token"]); 
@@ -123,7 +124,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
     }elseif(empty($errorsTL) And isset($_POST["tokenNTK"])){ //new task
-        $valsToValadate["priority"] = array_search($valsToValadate["priority"],$priorities) + 1; // index is used as encoded priority numeric value  
+        $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         unset($valsToValadate["submit"]);
         unset($valsToValadate["token"]);
 
@@ -171,7 +172,7 @@ head($pageName); // from functions.php, echoes out the head tags
 var openTabsIDQueue = []; 
 const maxTabsOpen = 10; 
 var currentTasklist; 
-const priorities = <?php echo json_encode($priorities);?>; // so there is one priorty list
+const prioritiesName = <?php echo json_encode($prioritiesName);?>; // so there is one priorty list
 
 const tokenETL = "<?php echo $tokenETL ?>"
 const tokenETK = "<?php echo $tokenETK ?>"
@@ -241,29 +242,30 @@ function changePriority(elementIDToChange, updateData=null, ){
     console.log("typeof(updateData): "+ typeof(updateData));
 
     if(typeof(updateData) != null){
-        var currentPriorityIndex = priorities.indexOf(priorityButton.innerHTML.replace(" Priority",""));
+        var currentPriorityIndex = prioritiesName.indexOf(priorityButton.innerHTML.replace(" Priority",""));
         //console.log(priorityButton.innerHTML.replace(" Priority",""))//test
     }else{
-        var currentPriorityIndex = priorities.indexOf(priorityButton.value);
+        var currentPriorityIndex = prioritiesName.indexOf(priorityButton.value);
     }
     
     console.log(currentPriorityIndex);//test
-    //console.log(priorities.length);//test
+    //console.log(prioritiesName.length);//test
 
-    if(currentPriorityIndex == (priorities.length - 1 )){
+    if(currentPriorityIndex == (prioritiesName.length - 1 )){
         var priorityIndexToGet = 0; 
     }else{
         var priorityIndexToGet = currentPriorityIndex + 1; 
     }
     console.log(priorityIndexToGet);//test
-    console.log(priorities[priorityIndexToGet]);//test
+    console.log(prioritiesName[priorityIndexToGet]);//test
     if(typeof(updateData) != null){
-        priorityButton.innerHTML = priorities[priorityIndexToGet] + " Priority";
+        priorityButton.innerHTML = prioritiesName[priorityIndexToGet] + " Priority";
         //db stuff
-        var dataToDB = {ID: updateData["ID"], priority: priorityIndexToGet++, table: updateData["table"]}; 
-        useAJAXedit(dataToDB);
+        priorityIndexToGet++; 
+        var dataToDB = {ID: updateData["ID"], priority: priorityIndexToGet, table: updateData["table"]}; 
+        result = useAJAXedit(dataToDB);
     }else{
-        priorityButton.value = priorities[priorityIndexToGet];
+        priorityButton.value = prioritiesName[priorityIndexToGet];
     }
     // change style
     switch (priorityIndexToGet){
@@ -307,6 +309,7 @@ function useAJAXedit(editData){
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             console.log("edit responce: "+this.responseText)
+            return this.responseText;
         }
         };
     
@@ -490,9 +493,8 @@ foreach($taskLists as $row => $vals){
                 
                 <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo (isset($taskList->deadline))? $taskList->deadline : "none"  ?> </button>
                 <input type = "datetime-local" min = "<?php date("d-m-Y h:i:s")?>" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
-                
                 <button class="button collabColour">Make Collab</button>
-                <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityName($taskList->priority,$priorities)." Priority"?></button>
+                <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityVal($taskList->priority,$prioritiesName)." Priority"?></button>
                 <button onclick="useAJAXdelete(<?php echo $taskList->ID; ?>, 'tasklist')" class="button red">Delete</button>
 
                 <?php
@@ -521,7 +523,7 @@ foreach($taskLists as $row => $vals){
                                         priority
                                     </td>
                                     <td class="taskTd tableDisplay">
-                                        <button onclick="changePriority('<?php echo $task->ID; ?>priorityTL',{ID: '<?php echo $task->ID; ?>',table: 'task'} )" class='button' id="<?php echo $task->ID; ?>priorityTL"><?php echo getPriorityName($task->priority,$priorities)." Priority"?></button>
+                                        <button onclick="changePriority('<?php echo $task->ID; ?>priorityTL',{ID: '<?php echo $task->ID; ?>',table: 'task'} )" class='button <?php echo getPriorityVal($task->priority, $prioritiesColour) ?>' id="<?php echo $task->ID; ?>priorityTL"><?php echo getPriorityVal($task->priority,$prioritiesName)." Priority"?></button>
                                         <div id="priorityTKError"></div>
 
                                     </td>
@@ -662,7 +664,7 @@ foreach($taskLists as $row => $vals){
                             <td><?php echo $taskList->name ?></td>
                             <td><?php echo yesOrNo($taskList->deadline) ?></td>
                             <td><?php echo yesOrNo($taskList->collab) ?></td>
-                            <td><button onclick="changePriority('priority<?php echo $taskList->ID ?>ATL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'})"  id='priority<?php echo $taskList->ID ?>ATL' class='button'><?php echo getPriorityName($taskList->priority, $priorities)  ?></td>
+                            <td><button onclick="changePriority('priority<?php echo $taskList->ID ?>ATL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'})"  id='priority<?php echo $taskList->ID ?>ATL' class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>'><?php echo getPriorityVal($taskList->priority, $prioritiesName)  ?></td>
                             <td><?php echo ($taskList->ownerID == $_SESSION["userID"])? "you" : getNameFromID($taskList->ownerID,$conn) ?></td>
                             <td>
                                 <button onclick='openTaskList("<?php echo $taskList->ID ?>")' id='openButton<?php echo $taskList->ID ?>' class='button green'>Open?</button>
