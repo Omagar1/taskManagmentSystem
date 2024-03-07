@@ -173,6 +173,7 @@ var openTabsIDQueue = [];
 const maxTabsOpen = 10; 
 var currentTasklist; 
 const prioritiesName = <?php echo json_encode($prioritiesName);?>; // so there is one priorty list
+const userID = <?php echo $_SESSION["userID"];?>
 
 const tokenETL = "<?php echo $tokenETL ?>"
 const tokenETK = "<?php echo $tokenETK ?>"
@@ -343,8 +344,30 @@ function useAJAXdelete(IDToDelete,tableFrom){
     } 
 }
 
-function completeStage(ID, currentVal){
+function completeStage(stageID, currentVal){
+    
+    //visual stuff
 
+    var completButton = document.getElementById("complete" + stageID + "SG")
+    console.log("complete" + stageID + "SG");
+    console.log(completButton); 
+    if(!currentVal){
+        completButton.classList.add("green");
+    }else{
+        completButton.classList.remove("green");
+    }
+
+    // getting data to send to db
+    var dateTimeCompletedToSet;
+    if (!currentVal){
+        dateTimeCompletedToSet = getCurrentDateTime();
+    }else{
+        dateTimeCompletedToSet = null;
+    }
+     
+    // db stuff
+    var updateData = {ID: stageID, complete: !currentVal, dateTimeCompleted: dateTimeCompletedToSet, completedBy: userID, table: "stage"}; 
+    useAJAXedit(updateData);
 }
 
 
@@ -544,35 +567,35 @@ foreach($taskLists as $row => $vals){
                             <!-- ------------- stages ------------- -->
                             <?php if(count($task->stages)== 1):?>
                                 <div>
-                                    <p>Completed:</p>
-                                    
+                                    <p>Complete:</p>
+                                    <button onclick="completeStage(<?php echo $task->stages[0]->ID?>, <?php echo $task->stages[0]->complete?>)" id="complete<?php echo $task->stages[0]->ID?>SG" class="stageButton <?php echo ($task->stages[0]->complete == 1)?  "green": "" ?>">✓</button>
                                 </div>
                             <?php else: ?>
-
-                            <?php endif;?>
-                            <table class="clear">
-                                <tr>
-                                    <th class="clear textWhite"><b>Stages</b></th>
-                                    <th class="clear textWhite"><b>weighting</b></th>
-                                </tr>
-                                
-                                <?php foreach($task->stages as $stage):?>
+                                <table class="clear">
                                     <tr>
-                                        <td class='clear'>
-                                            <?php echo $stage->name?>
-                                        </td>
-                                        <td class='clear'>
-                                            <?php echo $stage->weighting?>
-                                        </td>
-                                        <td class='clear'>
-                                            <button onclick="completeStage(<?php echo $stage->ID?>, <?php echo $stage->complete?>)" id="completed<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
-                                        </td>
-                                        <td class='clear'>
-                                            <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage')" class="button red">x</button>
-                                        </td>
+                                        <th class="clear textWhite"><b>Stages</b></th>
+                                        <th class="clear textWhite"><b>weighting</b></th>
                                     </tr>
-                                <?php endforeach ?>
-                            </table>
+                                    
+                                    <?php foreach($task->stages as $stage):?>
+                                        <tr>
+                                            <td class='clear'>
+                                                <?php echo $stage->name?>
+                                            </td>
+                                            <td class='clear'>
+                                                <?php echo $stage->weighting?>
+                                            </td>
+                                            <td class='clear'>
+                                                <button onclick="completeStage(<?php echo $stage->ID?>, <?php echo $stage->complete?>)" id="complete<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
+                                            </td>
+                                            <td class='clear'>
+                                                <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage')" class="button red">x</button>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach ?>
+                                </table>
+                            <?php endif;?>
+                            
                                 
                             
                             

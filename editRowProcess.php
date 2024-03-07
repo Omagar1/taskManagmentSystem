@@ -35,10 +35,10 @@ function editRow($editedVals, $editTable, $con){
         $rowCount = $stmt->rowCount();
 
         if($rowCount =='0'){ // 
-            echo "Failed!";
+            echo "Failed";
         }
         else{
-            echo "Success!";
+            echo "Success";
         }
         //var_dump($stmt); //test
         //var_dump($editedVals); //test
