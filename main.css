@@ -101,6 +101,12 @@ th {
   position: relative;
 }
 
+.centreTable{
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 
 /* ----------------------------- Header Stuff -----------------------------  */
 #header {
@@ -381,7 +387,6 @@ option:focus {
   background-color: white ;
   border: solid black;
   color: white;
-  padding: 10%;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -391,6 +396,15 @@ option:focus {
   box-sizing: border-box;
   padding-left: 20%;
   padding-right: 20%;
+}
+.stageButton:hover{
+  background-color: #49be25 ;
+}
+
+.stageList{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 

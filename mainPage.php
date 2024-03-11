@@ -15,7 +15,7 @@ require "editRowProcess.php"
 
 // $_SESSION["previous"] = []; // initalising the Previous Stack
 $prioritiesName = ["high","medium","low"]; 
-$prioritiesColour = ["red","","green"]; // medium has no colour as it uses the default colour of the element
+$prioritiesColour = ["red","amber","green"]; // medium has no colour as it uses the default colour of the element
 $pageName = basename($_SERVER["PHP_SELF"]); // getting the name of the page so head can add it to the Previous stack
 $_SESSION["currentPage"] = $pageName; 
 
@@ -26,7 +26,6 @@ function getPriorityVal($PriorityVal, $priorities,){
 
 // ---------------------------------------------------- task List Validation -------------------------------------------------
 $OpenTabs = [] ;// so reloading dosent close them
-$currentDisplay; 
 function nameInDB($nameToCheck,$con){
       // qry to get existing usernames for valadation
       $qry = "SELECT `name` FROM tasklist WHERE `name` = ? AND ownerID = ?";
@@ -41,6 +40,7 @@ function nameInDB($nameToCheck,$con){
 }
 
 var_dump($_POST);//test
+//echo $_SESSION["currentDisplay"]; //test 
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
 if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) Or (isset($_POST["tokenETL"]) And $_SESSION["tokenETL"] == $_POST["tokenETL"]) Or (isset($_POST["tokenNTK"]) And $_SESSION["tokenNTK"] == $_POST["tokenNTK"] Or (isset($_POST["tokenETK"]) And $_SESSION["tokenETK"] == $_POST["tokenETK"]) )){
     
@@ -54,17 +54,17 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
     if(isset($_POST["tokenNTL"])){
         $endtag = "NTL";
         array_push($OpenTabs,"newTaskList");
-        $currentDisplay = "newTaskList";
+        $_SESSION["currentDisplay"] = "newTaskList";
     }elseif(isset($_POST["tokenETL"])){
         $endtag = "";
     }elseif(isset($_POST["tokenNTK"])){
         $endtag = "NTK";
         array_push($OpenTabs,"newTask");
-        $currentDisplay = "newTask";
+        $_SESSION["currentDisplay"] = "newTask";
     }elseif(isset($_POST["tokenETK"])){
         $endtag = "ETK";
         array_push($OpenTabs,"newTask");
-        $currentDisplay = "newTask";
+        $_SESSION["currentDisplay"] = "newTask";
     }
     
     
@@ -108,7 +108,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         $newTaskListID = addRow($valsToValadate, "tasklist", $conn);
         // so the new taskList is opened 
         array_push($OpenTabs, $newTaskListID);
-        $currentDisplay = $newTaskListID;
+        $_SESSION["currentDisplay"] = $newTaskListID;
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
         //close new Task List Tab
@@ -120,7 +120,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         unset($valsToValadate["tokenETL"]);
         editRow($valsToValadate, "tasklist", $conn);
         
-        $currentDisplay = $valsToValadate["ID"];
+        $_SESSION["currentDisplay"] = $valsToValadate["ID"];
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
     }elseif(empty($errorsTL) And isset($_POST["tokenNTK"])){ //new task
@@ -131,7 +131,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         addRow($valsToValadate, "task", $conn);
         // sets the current display to the task list the new task is in 
         array_push($OpenTabs,$valsToValadate["taskListID"]);
-        $currentDisplay = $valsToValadate["taskListID"];
+        $_SESSION["currentDisplay"] = $valsToValadate["taskListID"];
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
         //close new Task List Tab
@@ -143,7 +143,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         unset($valsToValadate["token"]);
         editRow($valsToValadate, "task", $conn);
         
-        //$currentDisplay = $result["tasklistID"];
+        //$_SESSION["currentDisplay"] = $result["tasklistID"];
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
     }
@@ -156,11 +156,19 @@ $tokenETL =  md5(uniqid(rand(), true)); // for editing task lists
 $tokenNTK =  md5(uniqid(rand(), true)); // for new tasks
 $tokenETK =  md5(uniqid(rand(), true)); // for editing tasks
 
+$tokenNSG =  md5(uniqid(rand(), true)); // for new stages 
+$tokenESG =  md5(uniqid(rand(), true)); // for editing stages
+
 $_SESSION["tokenNTL"] = $tokenNTL; // for new task lists
 $_SESSION["tokenETL"] = $tokenETL; // for editing task lists
 
 $_SESSION["tokenNTK"] = $tokenNTK; // for new tasks
-$_SESSION["tokenETK"] = $tokenETK; // for editing task 
+$_SESSION["tokenETK"] = $tokenETK; // for editing task
+
+$_SESSION["tokenNSG"] = $tokenNSG; // for new stages
+$_SESSION["tokenESG"] = $tokenESG; // for editing stages
+
+
 
 head($pageName); // from functions.php, echoes out the head tags
 
@@ -344,30 +352,47 @@ function useAJAXdelete(IDToDelete,tableFrom){
     } 
 }
 
-function completeStage(stageID, currentVal){
+function completeStage(stageID, oneStageDisplayActive=false){
     
-    //visual stuff
-
-    var completButton = document.getElementById("complete" + stageID + "SG")
-    console.log("complete" + stageID + "SG");
-    console.log(completButton); 
-    if(!currentVal){
-        completButton.classList.add("green");
-    }else{
-        completButton.classList.remove("green");
-    }
 
     // getting data to send to db
     var dateTimeCompletedToSet;
-    if (!currentVal){
-        dateTimeCompletedToSet = getCurrentDateTime();
-    }else{
+    var completeButton = document.getElementById("complete" + stageID + "SG")
+   
+    if (completeButton.classList.contains("green")){ // get currentVal based off if element has the green class
+        currentVal = true; 
         dateTimeCompletedToSet = null;
+        //visual stuff
+        completeButton.classList.remove("green");
+        
+    }else{
+        currentVal = false;
+        dateTimeCompletedToSet = getCurrentDateTime();
+        console.log("current Date Time: " + dateTimeCompletedToSet )// test
+        //visual stuff
+        completeButton.classList.add("green");
     }
+    
+    console.log("currentVal: " + currentVal); // test 
+    console.log("complete" + stageID + "SG"); // test 
+    console.log(completeButton);  // test 
+   
+    
      
     // db stuff
     var updateData = {ID: stageID, complete: !currentVal, dateTimeCompleted: dateTimeCompletedToSet, completedBy: userID, table: "stage"}; 
     useAJAXedit(updateData);
+}
+
+function addNewStage(taskID, hideOneStageDisplay=false){
+    if(hideOneStageDisplay){
+        // show multi stage display, hide one stage display
+        document.getElementById("oneStageDisplay"+taskID).classList.add("hidden");
+        document.getElementById("multiStageDisplay"+taskID).classList.replace("hidden", "showing");
+    }
+    // display newStageRow
+    document.getElementById("newStageRow"+taskID).classList.replace("hidden", "showing");
+    document.getElementById("newStageRow"+taskID+"PT2").classList.replace("hidden", "showing");
 }
 
 
@@ -515,7 +540,7 @@ foreach($taskLists as $row => $vals){
                 </div>
                 
                 <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo (isset($taskList->deadline))? $taskList->deadline : "none"  ?> </button>
-                <input type = "datetime-local" min = "<?php date("d-m-Y h:i:s")?>" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
+                <input type = "datetime-local" min = "<?php date("Y-m-d h:i:s")?>" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
                 <button class="button collabColour">Make Collab</button>
                 <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityVal($taskList->priority,$prioritiesName)." Priority"?></button>
                 <button onclick="useAJAXdelete(<?php echo $taskList->ID; ?>, 'tasklist')" class="button red">Delete</button>
@@ -565,40 +590,80 @@ foreach($taskLists as $row => $vals){
 
                             </table>
                             <!-- ------------- stages ------------- -->
-                            <?php if(count($task->stages)== 1):?>
-                                <div>
+                            <?php if(count($task->stages)== 1):?> 
+                                <!-- one Stage -->
+                                <div  id ="oneStageDisplay<?php echo $task->ID; ?>" class ="stageList">
                                     <p>Complete:</p>
-                                    <button onclick="completeStage(<?php echo $task->stages[0]->ID?>, <?php echo $task->stages[0]->complete?>)" id="complete<?php echo $task->stages[0]->ID?>SG" class="stageButton <?php echo ($task->stages[0]->complete == 1)?  "green": "" ?>">✓</button>
+                                    <button onclick="completeStage(<?php echo $task->stages[0]->ID?>)" id="complete<?php echo $task->stages[0]->ID?>SG-OSD" class="stageButton <?php echo ($task->stages[0]->complete == 1)?  "green": "" ?>">✓</button>
+                                    <button onclick="addNewStage(<?php echo $task->ID; ?>, true)" id="addNewStageButton<?php echo $task->ID; ?>OSD" class = "button green">Add New Stage</button>
                                 </div>
-                            <?php else: ?>
-                                <table class="clear">
-                                    <tr>
-                                        <th class="clear textWhite"><b>Stages</b></th>
-                                        <th class="clear textWhite"><b>weighting</b></th>
-                                    </tr>
-                                    
-                                    <?php foreach($task->stages as $stage):?>
-                                        <tr>
-                                            <td class='clear'>
-                                                <?php echo $stage->name?>
-                                            </td>
-                                            <td class='clear'>
-                                                <?php echo $stage->weighting?>
-                                            </td>
-                                            <td class='clear'>
-                                                <button onclick="completeStage(<?php echo $stage->ID?>, <?php echo $stage->complete?>)" id="complete<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
-                                            </td>
-                                            <td class='clear'>
-                                                <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage')" class="button red">x</button>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach ?>
-                                </table>
                             <?php endif;?>
-                            
+                            <!-- two stages above -->
+                            <table id ="multiStageDisplay<?php echo $task->ID; ?>" class="clear centreTable <?php echo (count($task->stages)== 1)? "hidden" : "" ;?>">
+                                <tr>
+                                    <th class="clear textWhite"><b>Stages</b></th>
+                                    <th class="clear textWhite"><b>weighting</b></th>
+                                    <th class="clear textWhite"><b>Mark as Complete</b></th>
+                                    <th class="clear textWhite"><b>edit</b></th>
+                                    <th class="clear textWhite"><button onclick="addNewStage(<?php echo $task->ID; ?>)" id="addNewStageButton<?php echo $task->ID; ?>" class = "button green">Add New Stage</button></th>
+                                </tr>
                                 
-                            
-                            
+                                <?php foreach($task->stages as $stage):?>
+                                    <tr>
+                                        <td class='clear'>
+                                            <?php echo $stage->name?>
+                                        </td>
+                                        <td class='clear'>
+                                            <?php echo $stage->weighting?>%
+                                        </td>
+                                        <td class='clear'>
+                                            <button onclick="completeStage(<?php echo $stage->ID?>)" id="complete<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
+                                        </td>
+                                        <td class='clear'>
+                                        </td>
+                                        <td class='clear'>
+                                            <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage')" class="button red">x</button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach ?>
+                                <!-- new stage Row  -->
+                                
+                                <tr id="newStageRow<?php echo $task->ID; ?>" class="hidden">
+                                    
+                                    <td class='clear'>
+                                        <input  id="name<?php echo $task->ID; ?>NSG" name ="name<?php echo $task->ID; ?>NSG" type="text" value="New Stage">
+                                    </td>
+                                    <td class='clear'>
+                                        <input  id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
+                                    </td>
+                                    <td class='clear'>
+                                        <input id="complete<?php echo $task->ID; ?>SG" class="stageButton" type="checkbox" value="true"/>
+                                    </td>
+                                    <td class='clear'>
+                                    </td>
+                                    <td class='clear'>
+                                        <button onclick="cancelNewStage(<?php echo $task->ID . ',' . count($task->stages) ?>)" class="button red">cancel</button> 
+                                    </td>
+                                    
+                                </tr>
+                                <tr id="newStageRow<?php echo $task->ID; ?>PT2" class="hidden">
+                                    <td class='clear'>
+                                        <input type="hidden" name="tokenNSG" value="<?php echo $tokenNSG; ?>" />
+                                    </td>
+
+                                    <td class='clear'>
+                                    </td>
+                                    <td class='clear'>
+                                        <button id='submitNSG' class=" button green">Create!</button>
+                                    </td>
+                                    <td class='clear'>
+                                    </td>
+                                    <td class='clear'>
+                                    </td>
+                                </tr>
+                                </div>
+                            </table>
+             
                         </div>
                 <?php
                     }// taskList foreach close
@@ -629,7 +694,7 @@ foreach($taskLists as $row => $vals){
                 <input type="submit" name='submitNTL' id='submitNTL' class="green"value="Create!">
             </form>
             <script> errorMsg(<?php if (isset($errorsTL)){ echo json_encode($errorsTL);} // need the json encode part ?>)  </script> 
-            <button onclick="closeTaskList('newTaskList')" class="button red">Cancle</button>
+            <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>
         </div>
 
         <!-- newTask -->
@@ -668,9 +733,10 @@ foreach($taskLists as $row => $vals){
                 <input type="submit" name='submitNT' id='submitNT' class="green"value="Create!">
             </form>
             <script> errorMsg(<?php if (isset($errorsT)){ echo json_encode($errorsT);} // need the json encode part ?>)  </script> 
-            <button onclick="closeTaskList('newTaskList')" class="button red">Cancle</button>
+            <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>
         </div>
         <!-- All task lists  -->
+
         <div id="allContainer" class="showing">
             <table class = "tableDisplay">
                     <tr>
@@ -683,11 +749,11 @@ foreach($taskLists as $row => $vals){
                     </tr>
                 
                 <?php foreach($taskLists as $taskList): ?> 
-                        <tr id='allRow".$taskList->ID."'> 
+                        <tr id='allRow<?php echo $taskList->ID;?>'> 
                             <td><?php echo $taskList->name ?></td>
                             <td><?php echo yesOrNo($taskList->deadline) ?></td>
                             <td><?php echo yesOrNo($taskList->collab) ?></td>
-                            <td><button onclick="changePriority('priority<?php echo $taskList->ID ?>ATL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'})"  id='priority<?php echo $taskList->ID ?>ATL' class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>'><?php echo getPriorityVal($taskList->priority, $prioritiesName)  ?></td>
+                            <td><button onclick="changePriority('priority<?php echo $taskList->ID ?>ATL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'})"  id='priority<?php echo $taskList->ID ?>ATL' class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>'><?php echo getPriorityVal($taskList->priority, $prioritiesName)  ?> Priority</td>
                             <td><?php echo ($taskList->ownerID == $_SESSION["userID"])? "you" : getNameFromID($taskList->ownerID,$conn) ?></td>
                             <td>
                                 <button onclick='openTaskList("<?php echo $taskList->ID ?>")' id='openButton<?php echo $taskList->ID ?>' class='button green'>Open?</button>
@@ -705,7 +771,7 @@ foreach($taskLists as $row => $vals){
             echo "openTaskList('".$Tab."'); ";
         }
         ?>
-        changeTab("<?php if (isset($currentDisplay)){ echo $currentDisplay;}else{echo "all";} ?>")
+        changeTab("<?php if (isset($_SESSION["currentDisplay"]) And $_SESSION["currentDisplay"]!="" ){ echo $_SESSION["currentDisplay"];}else{echo "all";} ?>")
         // closing new task List tab if opended and new task list is created
         </script>
              

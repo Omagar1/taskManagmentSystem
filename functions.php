@@ -266,12 +266,12 @@ function head($pageName, $extra = null){
 			function getCurrentDateTime(){
 				// modified from https://stackoverflow.com/questions/10211145/getting-current-date-and-time-in-javascript
 				var currentdate = new Date(); 
-				var datetime = currentdate.getDate() + "-"
+				var datetime =  currentdate.getFullYear() + "-"
 								+ (currentdate.getMonth()+1)  + "-" 
-								+ currentdate.getFullYear() + " "  
+								+ currentdate.getDate() + " "  
 								+ currentdate.getHours() + ":"  
 								+ currentdate.getMinutes() + ":" 
-								+ currentdate.getSeconds();
+								+ currentdate.getSeconds(); // plus one on month is needed
 				return datetime; 
 			}
 		</script>
