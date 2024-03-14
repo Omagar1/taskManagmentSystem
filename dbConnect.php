@@ -10,5 +10,6 @@ try {
   //echo "Connected successfully </br>"; //test
 } catch(PDOException $e) {
   echo $e;
+
 }
 ?>

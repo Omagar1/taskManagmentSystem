@@ -26,7 +26,7 @@ function getPriorityVal($PriorityVal, $priorities,){
 
 // ---------------------------------------------------- task List Validation -------------------------------------------------
 $OpenTabs = [] ;// so reloading dosent close them
-function nameInDB($nameToCheck,$con){
+function nameInDB($nameToCheck,$con){ // change !!!!!!!!!!!!!!!!!!!!!
       // qry to get existing usernames for valadation
       $qry = "SELECT `name` FROM tasklist WHERE `name` = ? AND ownerID = ?";
       $stmt = $con->prepare($qry);
@@ -49,6 +49,7 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
     //var_dump($OpenTabs);
     $valsToValadate = $_POST;
     $errorsTL = []; // id then msg as key pair
+    $endtag;
     //var_dump($editedVals); //test 
 
     if(isset($_POST["tokenNTL"])){
@@ -81,6 +82,14 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         }elseif($column == "name"){
             if(nameInDB($valToCheck,$conn)){
                 $msg = $valToCheck."Task List Already exists";
+                $errorsTL[$column] = $msg; 
+            }
+        }elseif($column == "weightig"){
+            if($valToCheck > 100 ){
+                $msg = $column." Must not be over 100";
+                $errorsTL[$column] = $msg; 
+            }elseif($valToCheck < 0){
+                $msg = $column." Must not be under 0";
                 $errorsTL[$column] = $msg; 
             }
         }
@@ -145,6 +154,12 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
         
         //$_SESSION["currentDisplay"] = $result["tasklistID"];
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
+        unset($valsToValadate);
+    }elseif(empty($errorsTL) And isset($_POST["tokenNSG"])){
+        echo "new stage Ran";// test
+        unset($valsToValadate["tokenNSG"]);
+        editRow($valsToValadate, "task", $conn);
+        
         unset($valsToValadate);
     }
 
@@ -383,6 +398,59 @@ function completeStage(stageID, oneStageDisplayActive=false){
     var updateData = {ID: stageID, complete: !currentVal, dateTimeCompleted: dateTimeCompletedToSet, completedBy: userID, table: "stage"}; 
     useAJAXedit(updateData);
 }
+function changeWeighting(taskID, numberExtra=-1){
+    //numberExtra is for when a new stage is being added it is not set to -1 instead 0
+    // why is numberExtra=-1 when not new stage and 0 when there is a new stage? 
+    // numberOfStagesToConsider is based on the length of the list of elements with the class "weighting"+taskID+"SG",
+    // the weighting row for new stage column has the  weighting"+taskID+"SG class so its weighting is changed correctly when displaded
+    // but when its not displayd it will still be got by  getElementsByClassName("weighting"+taskID+"SG") hence the -1 when we dont want new Stage 
+    var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
+    console.log("weightingsToChange: "+ weightingsToChange); //test
+    var numberOfStagesToConsider = weightingsToChange.length + numberExtra ;// to be used when a stage is uneven weighted to calculate the new evenWeighting of the rest of the stages
+    var percentageLeft = 100.00; // to be used when a stage is unevenly weighted to calculate the new evenWeighting of the rest of the stages
+
+    for(const weighting of weightingsToChange){ // first check if there is any uneven weighting this MUST be first  as percentageLeft and  numberOfStagesToConsider must be set before the even weitings are calculated    
+        if (weighting.classList.contains("unEven")){
+            if(weighting.nodeName == "INPUT"){
+                weightingVal = weighting.value.replace("%",""); //removing the % 
+            }else{
+                weightingVal = weighting.innerHTML.replace("%",""); //removing the % 
+            }
+            percentageLeft = percentageLeft - weightingVal;
+            numberOfStagesToConsider--; 
+        }
+    }
+    for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even
+        if (weighting.classList.contains("even")){
+            let newWeighting = percentageLeft / numberOfStagesToConsider;
+            let newWeightingNumber = Number(newWeighting);
+
+            console.log("newWeighting: " + newWeightingNumber + "%"); // Test
+            console.log(newWeightingNumber + " > 0: ", newWeightingNumber > 0); // Test
+
+            if (newWeightingNumber < 0) {
+                document.getElementById("task" + taskID + "ErrorMsg").innerHTML = "Percentages cannot total over 100%!";
+            } else {
+                document.getElementById("task" + taskID + "ErrorMsg").innerHTML = ""; // clearing Error Mesage
+                if (weighting.nodeName == "INPUT") {
+                    weighting.value = newWeightingNumber.toFixed(2) + "%";
+                } else {
+                    weighting.innerHTML = newWeightingNumber.toFixed(2) + "%";
+                }
+            }
+            
+            
+        }
+    }
+}
+function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
+    //console.log("weighting"+taskID+stageID+"SG"); //test
+    var tag = document.getElementById("weighting"+taskID+stageID+"SG")
+    //console.log(tag); //test
+    tag.classList.replace("even","unEven");
+    changeWeighting(taskID,numberExtra);
+
+}
 
 function addNewStage(taskID, hideOneStageDisplay=false){
     if(hideOneStageDisplay){
@@ -393,6 +461,32 @@ function addNewStage(taskID, hideOneStageDisplay=false){
     // display newStageRow
     document.getElementById("newStageRow"+taskID).classList.replace("hidden", "showing");
     document.getElementById("newStageRow"+taskID+"PT2").classList.replace("hidden", "showing");
+
+    //change weighting on stages existing stages
+    changeWeighting(taskID,0);
+}
+
+function createNewStage(taskID){
+    //change weightings in DB
+    var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
+
+    for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even
+        if (weighting.classList.contains("even")){
+            var stageID = weighting.id.replace("weighting","").replace("SG",""); 
+            var updateData = {ID: stageID, weighting: weighting.innerHTML}
+            useAJAXedit(updateData);
+        }
+    }
+
+
+    //send values
+    newStageVals = new Map();
+    newStageVals.set("name", document.getElementById("name"+taskID+"NSG").value);
+    newStageVals.set("weighting", document.getElementById("weighting"+taskID+"NSG").value);
+    newStageVals.set("unEvenWeighting", document.getElementById("weighting"+taskID+"NSG").classList.contains("unEven") );
+    newStageVals.set("taskID",taskID);
+    newStageVals.set("tokenNSG",$tokenNSG);
+    post("mainPage.php", newStageVals);
 }
 
 
@@ -403,15 +497,17 @@ function addNewStage(taskID, hideOneStageDisplay=false){
 class Stage{ 
     public $ID;
     public $name;
-    public $weighting;	
+    public $weighting;
+    public $unEvenWeighting;
     public $complete;	
     public $dateTimeCompleted;
     public $completedBy;
 
-    public function __construct($vals,){
+    public function __construct($vals){
         // seting varibles
         foreach($vals as $property => $val) {
             $this->$property = $val;
+            //echo "property: ".$property." val:". $val. "<br>"; //test
         }
     }
 }
@@ -430,7 +526,7 @@ class Task{
        
 
         // seting tasks in the task list
-        $qry = "SELECT ID, `name`, weighting, complete, dateTimeCompleted, completedBy FROM stage WHERE taskID = ?;";
+        $qry = "SELECT ID, `name`, weighting, unEvenWeighting, complete, dateTimeCompleted, completedBy FROM stage WHERE taskID = ?;";
         $stmt = $con->prepare($qry);
         $stmt->execute([$this->ID]);
         $this->stages = $stmt->fetchAll(PDO::FETCH_ASSOC); 
@@ -609,12 +705,13 @@ foreach($taskLists as $row => $vals){
                                 </tr>
                                 
                                 <?php foreach($task->stages as $stage):?>
+                                    <?php var_dump( $stage->unEvenWeighting);?>
                                     <tr>
                                         <td class='clear'>
                                             <?php echo $stage->name?>
                                         </td>
                                         <td class='clear'>
-                                            <?php echo $stage->weighting?>%
+                                            <div id="weighting<?php echo $stage->ID?>SG" class ="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?>"><?php echo $stage->weighting?>%</div>
                                         </td>
                                         <td class='clear'>
                                             <button onclick="completeStage(<?php echo $stage->ID?>)" id="complete<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
@@ -634,10 +731,10 @@ foreach($taskLists as $row => $vals){
                                         <input  id="name<?php echo $task->ID; ?>NSG" name ="name<?php echo $task->ID; ?>NSG" type="text" value="New Stage">
                                     </td>
                                     <td class='clear'>
-                                        <input  id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
+                                        <input onkeyup="changeWeightingToUnEven(<?php echo $task->ID; ?>,'N', 0 )" id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" class ="weighting<?php echo $task->ID?>SG even" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
                                     </td>
                                     <td class='clear'>
-                                        <input id="complete<?php echo $task->ID; ?>SG" class="stageButton" type="checkbox" value="true"/>
+                                        <input id="complete<?php echo $task->ID; ?>NSG" class="stageButton" type="checkbox" value=""/>
                                     </td>
                                     <td class='clear'>
                                     </td>
@@ -654,7 +751,7 @@ foreach($taskLists as $row => $vals){
                                     <td class='clear'>
                                     </td>
                                     <td class='clear'>
-                                        <button id='submitNSG' class=" button green">Create!</button>
+                                        <button  onclick="createNewStage(<?php echo $task->ID; ?>)" id='submitNSG'  class=" button green">Create!</button>
                                     </td>
                                     <td class='clear'>
                                     </td>
@@ -663,6 +760,8 @@ foreach($taskLists as $row => $vals){
                                 </tr>
                                 </div>
                             </table>
+                            <div id="task<?php echo $task->ID; ?>ErrorMsg" class = "red"></div>
+
              
                         </div>
                 <?php

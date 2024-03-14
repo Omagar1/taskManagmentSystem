@@ -7,6 +7,7 @@ function createUser($uname, $email, $pword, $con){
         // seting up values for user table
         $newCollabCode = generateCollabCode($con);
         $pwordHashed =  password_hash($pword, PASSWORD_DEFAULT);
+        
         //echo "test:"  . $pword; //test 
         // teste test 
         //echo "test hash:"  . $pwordHashed; //test
