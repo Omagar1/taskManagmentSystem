@@ -42,14 +42,18 @@ function nameInDB($nameToCheck,$con){ // change !!!!!!!!!!!!!!!!!!!!!
 var_dump($_POST);//test
 //echo $_SESSION["currentDisplay"]; //test 
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
-if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) Or (isset($_POST["tokenETL"]) And $_SESSION["tokenETL"] == $_POST["tokenETL"]) Or (isset($_POST["tokenNTK"]) And $_SESSION["tokenNTK"] == $_POST["tokenNTK"] Or (isset($_POST["tokenETK"]) And $_SESSION["tokenETK"] == $_POST["tokenETK"]) )){
+if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
+Or (isset($_POST["tokenETL"]) And $_SESSION["tokenETL"] == $_POST["tokenETL"]) 
+Or (isset($_POST["tokenNTK"]) And $_SESSION["tokenNTK"] == $_POST["tokenNTK"] 
+Or (isset($_POST["tokenETK"]) And $_SESSION["tokenETK"] == $_POST["tokenETK"]) 
+Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )){
     
     echo " valadation Ran"; //test
     
     //var_dump($OpenTabs);
     $valsToValadate = $_POST;
     $errorsTL = []; // id then msg as key pair
-    $endtag;
+    $endtag ="";
     //var_dump($editedVals); //test 
 
     if(isset($_POST["tokenNTL"])){
@@ -158,7 +162,13 @@ if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
     }elseif(empty($errorsTL) And isset($_POST["tokenNSG"])){
         echo "new stage Ran";// test
         unset($valsToValadate["tokenNSG"]);
-        editRow($valsToValadate, "task", $conn);
+        $result = addRow($valsToValadate, "stage", $conn);
+        if($result != false){
+            ?> 
+            <script>changeWeightingsInDB(<?php echo $valsToValadate["taskID"]?>, true )</script>
+            
+            <?php
+        }
         
         unset($valsToValadate);
     }
@@ -200,6 +210,8 @@ const userID = <?php echo $_SESSION["userID"];?>
 
 const tokenETL = "<?php echo $tokenETL ?>"
 const tokenETK = "<?php echo $tokenETK ?>"
+
+const tokenNSG = "<?php echo $tokenNSG?>"
 //----------------------------------------------------Functions ----------------------------------------------------
 function openTaskList(taskListID){
     
@@ -466,27 +478,41 @@ function addNewStage(taskID, hideOneStageDisplay=false){
     changeWeighting(taskID,0);
 }
 
-function createNewStage(taskID){
+function changeWeightingsInDB(taskID, reload=false){
     //change weightings in DB
     var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
 
     for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even
         if (weighting.classList.contains("even")){
             var stageID = weighting.id.replace("weighting","").replace("SG",""); 
-            var updateData = {ID: stageID, weighting: weighting.innerHTML}
+            var updateData = {ID: stageID, weighting: weighting.innerHTML, table:"stage"}
             useAJAXedit(updateData);
         }
     }
+    if (reload){
+        post("mainPage.php",{left:"intentionaly Blank"}); // to reload the page 
 
+    }
+}
 
-    //send values
+function createNewStage(taskID){
+    // on submit
+    // create new Stage
     newStageVals = new Map();
     newStageVals.set("name", document.getElementById("name"+taskID+"NSG").value);
     newStageVals.set("weighting", document.getElementById("weighting"+taskID+"NSG").value);
     newStageVals.set("unEvenWeighting", document.getElementById("weighting"+taskID+"NSG").classList.contains("unEven") );
     newStageVals.set("taskID",taskID);
-    newStageVals.set("tokenNSG",$tokenNSG);
+    newStageVals.set("tokenNSG",tokenNSG);
     post("mainPage.php", newStageVals);
+    //other weightings changed after creation in valadations by uses of above changeWeightingsInDB()
+
+    
+}
+
+function evenUneven(stageID, evenVal){
+    // chnage button display
+    // change if uneven to even change weightings to reflect that
 }
 
 
@@ -698,9 +724,9 @@ foreach($taskLists as $row => $vals){
                             <table id ="multiStageDisplay<?php echo $task->ID; ?>" class="clear centreTable <?php echo (count($task->stages)== 1)? "hidden" : "" ;?>">
                                 <tr>
                                     <th class="clear textWhite"><b>Stages</b></th>
-                                    <th class="clear textWhite"><b>weighting</b></th>
+                                    <th class="clear textWhite"><b>Weighting</b></th>
                                     <th class="clear textWhite"><b>Mark as Complete</b></th>
-                                    <th class="clear textWhite"><b>edit</b></th>
+                                    <th class="clear textWhite"><b>Edit</b></th>
                                     <th class="clear textWhite"><button onclick="addNewStage(<?php echo $task->ID; ?>)" id="addNewStageButton<?php echo $task->ID; ?>" class = "button green">Add New Stage</button></th>
                                 </tr>
                                 
@@ -717,7 +743,8 @@ foreach($taskLists as $row => $vals){
                                             <button onclick="completeStage(<?php echo $stage->ID?>)" id="complete<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
                                         </td>
                                         <td class='clear'>
-                                        </td>
+                                            <button onclick="evenUneven(<?php echo $stage->ID?> , <?php echo $stage->unEvenWeighting?> )" class="button"><?php echo ($stage->unEvenWeighting == 1 )? "Uneven" : "Even"?></button>
+                                        </td>                                        
                                         <td class='clear'>
                                             <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage')" class="button red">x</button>
                                         </td>

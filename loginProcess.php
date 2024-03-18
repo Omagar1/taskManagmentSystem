@@ -24,6 +24,8 @@ function checkLoginData($uname, $pword, $conn) {
                 return ""; // to stop vs code being mad that there's no return value  
             } else {
                 //echo "USER NOT LOGGED IN"; //test
+
+                
                 $msg = "Invalid Username or Password!";
                 return $msg;
             }

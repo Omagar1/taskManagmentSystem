@@ -55,18 +55,6 @@ function addRow($addedVals, $addTable, $con){
         echo "Error : ".$e->getMessage(); // dev error mesage 
         return false; 
     }
-
 }
-
-
-
-
-
-
-
-
-
-
-
 
 ?>
