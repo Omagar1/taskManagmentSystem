@@ -274,6 +274,18 @@ function head($pageName, $extra = null){
 								+ currentdate.getSeconds(); // plus one on month is needed
 				return datetime; 
 			}
+
+			function addGenralErrorMsg(msgToAdd, colour){
+				clearGenralErrorMsg(); // clears before adding
+				var msgElement = document.getElementById("genralErrorMsg")
+				msgElement.innerHTML = msgToAdd;
+				msgElement.classList.add(colour); 
+			}
+			function clearGenralErrorMsg(){
+				var msgElement = document.getElementById("genralErrorMsg")
+				msgElement.innerHTML = "";
+				msgElement.classList = ""; 
+			}
 		</script>
 	
 	<?php
@@ -389,6 +401,7 @@ function footer()
 {
 	?>
 	<footer id="footer" class="bottom">
+		<div id="genralErrorMsg" class=""></div>
 		<?php 
 			if (isset($_SESSION["loggedIn"])){
 				echo"

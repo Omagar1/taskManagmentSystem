@@ -111,7 +111,8 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
     //var_dump($valsToValadate["deadline"]);//test
     if(isset($valsToValadate["deadline"]) And ($valsToValadate["deadline"] == "0000-00-00 00:00:00" Or $valsToValadate["deadline"] == "" )){
         $valsToValadate["deadline"] = null;// must be set as so you can remove a deadline
-    }
+    } 
+    var_dump($errorsTL);//test
     if(empty($errorsTL) And isset($_POST["tokenNTL"]) ){ // new task list
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         $valsToValadate["ownerID"] = $_SESSION["userID"];
@@ -137,6 +138,7 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
     }elseif(empty($errorsTL) And isset($_POST["tokenNTK"])){ //new task
+        echo "new task Ran";// test
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         unset($valsToValadate["submit"]);
         unset($valsToValadate["token"]);
@@ -165,7 +167,7 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         $result = addRow($valsToValadate, "stage", $conn);
         if($result != false){
             ?> 
-            <script>changeWeightingsInDB(<?php echo $valsToValadate["taskID"]?>, true )</script>
+            <script>changeWeightingsInDB(<?php echo $valsToValadate["taskID"]?>, true ) // change to  end bc loading stuff </script>
             
             <?php
         }
@@ -355,28 +357,41 @@ function useAJAXedit(editData){
 }
 
 
-function useAJAXdelete(IDToDelete,tableFrom){
+function useAJAXdelete(IDToDelete,tableFrom, extra=null){
     
     if (confirm("are you sure?")) {
-        //visual 
-        if(tableFrom == "tasklist"){
-            closeTaskList(IDToDelete);// if open 
-            document.getElementById("allRow"+IDToDelete).classList.add("hidden");
-        }else if(tableFrom == "task"){
-            hideTask(IDToDelete);
-        }
+        // loading msg 
+        addGenralErrorMsg("Removing " + tableFrom + "...", "green");
         
         //from data base - using ajax 
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
             // document.getElementById("msg").innerHTML = this.responseText;
-            console.log("delete responce: "+this.responseText)
+            console.log("delete responce: "+this.responseText);
+            //visual - only if DB change worked  
+            if(tableFrom == "tasklist"){
+                closeTaskList(IDToDelete);// if open 
+                document.getElementById("allRow"+IDToDelete).classList.add("hidden");
+            }else if(tableFrom == "task"){
+                hideTask(IDToDelete);
+            }else if( tableFrom == "stage"){
+                hideStage(IDToDelete);
+                changeWeightingsInDB(extra);
+                changeWeighting(extra);
+            }
+            clearGenralErrorMsg();
+        }else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
+            addGenralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");
         }
         };
         xmlhttp.open("GET", "AJAXdelete.php?ID=" + IDToDelete + "&table=" + tableFrom, true);
         xmlhttp.send();
     } 
+}
+
+function hideStage(stageID){
+    document.getElementById("stage"+stageID).remove();
 }
 
 function completeStage(stageID, oneStageDisplayActive=false){
@@ -438,7 +453,7 @@ function changeWeighting(taskID, numberExtra=-1){
             let newWeightingNumber = Number(newWeighting);
 
             console.log("newWeighting: " + newWeightingNumber + "%"); // Test
-            console.log(newWeightingNumber + " > 0: ", newWeightingNumber > 0); // Test
+            //console.log(newWeightingNumber + " > 0: ", newWeightingNumber > 0); // Test
 
             if (newWeightingNumber < 0) {
                 document.getElementById("task" + taskID + "ErrorMsg").innerHTML = "Percentages cannot total over 100%!";
@@ -455,6 +470,26 @@ function changeWeighting(taskID, numberExtra=-1){
         }
     }
 }
+
+function changeWeightingsInDB(taskID, reload=false){
+    //change weightings in DB
+    var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
+    
+    for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even excluding new satge weighting 
+        var stageID = weighting.id.replace("weighting","").replace("SG","");
+        if (weighting.classList.contains("even") &&  !stageID.includes("N") ){
+             
+            var updateData = {ID: stageID, weighting: weighting.innerHTML, table:"stage"}
+            console.log(updateData); //test 
+            useAJAXedit(updateData);
+        }
+    }
+    if (reload){
+        post("mainPage.php",{left:"intentionaly Blank"}); // to reload the page 
+
+    }
+}
+
 function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
     //console.log("weighting"+taskID+stageID+"SG"); //test
     var tag = document.getElementById("weighting"+taskID+stageID+"SG")
@@ -478,22 +513,7 @@ function addNewStage(taskID, hideOneStageDisplay=false){
     changeWeighting(taskID,0);
 }
 
-function changeWeightingsInDB(taskID, reload=false){
-    //change weightings in DB
-    var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
 
-    for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even
-        if (weighting.classList.contains("even")){
-            var stageID = weighting.id.replace("weighting","").replace("SG",""); 
-            var updateData = {ID: stageID, weighting: weighting.innerHTML, table:"stage"}
-            useAJAXedit(updateData);
-        }
-    }
-    if (reload){
-        post("mainPage.php",{left:"intentionaly Blank"}); // to reload the page 
-
-    }
-}
 
 function createNewStage(taskID){
     // on submit
@@ -731,8 +751,8 @@ foreach($taskLists as $row => $vals){
                                 </tr>
                                 
                                 <?php foreach($task->stages as $stage):?>
-                                    <?php var_dump( $stage->unEvenWeighting);?>
-                                    <tr>
+                                    <?php //var_dump( $stage->unEvenWeighting); //test?>
+                                    <tr id = "stage<?php echo $stage->ID?>" class="stagesOfTask<?php echo $task->ID?>">
                                         <td class='clear'>
                                             <?php echo $stage->name?>
                                         </td>
@@ -746,7 +766,7 @@ foreach($taskLists as $row => $vals){
                                             <button onclick="evenUneven(<?php echo $stage->ID?> , <?php echo $stage->unEvenWeighting?> )" class="button"><?php echo ($stage->unEvenWeighting == 1 )? "Uneven" : "Even"?></button>
                                         </td>                                        
                                         <td class='clear'>
-                                            <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage')" class="button red">x</button>
+                                            <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage',<?php echo $task->ID?> )" class="button red">Remove</button>
                                         </td>
                                     </tr>
                                 <?php endforeach ?>
@@ -829,15 +849,15 @@ foreach($taskLists as $row => $vals){
 
                 <input type="hidden" name="tokenNTK" value="<?php echo $tokenNTK; ?>" />
 
-                <div class="txtLeft"><label for="nameNT">Task Name</label></div>
-                <input type="text"name="nameNT" id="nameNT" value="<?php if(isset($valsToValadate["nameNT"])){echo $valsToValadate["nameNT"];}?>">
-                <div id="nameNTError"></div>
+                <div class="txtLeft"><label for="nameNTK">Task Name</label></div>
+                <input type="text"name="nameNTK" id="nameNTK" value="<?php if(isset($valsToValadate["nameNTK"])){echo $valsToValadate["nameNTK"];}?>">
+                <div id="nameNTKError"></div>
 
-                <div class="txtLeft"><label for="taskListIDNT">Belongs to Task List:</label></div>
-                <select type="text"name="taskListIDNT" id="taskListIDNT">
+                <div class="txtLeft"><label for="taskListIDNTK">Belongs to Task List:</label></div>
+                <select type="text"name="taskListIDNTK" id="taskListIDNTK">
                 <?php
                 foreach ($taskLists as $taskList){
-                    if(isset($valsToValadate["BTtaskList"]) And $taskList->ID == $valsToValadate["BTtaskList"]){
+                    if(isset($valsToValadate["taskListIDNTK"]) And $taskList->ID == $valsToValadate["taskListIDNTK"]){
                         echo "<option value=".$taskList->ID."selected>".$taskList->name."</option>";
                     }else{
                         echo "<option value=".$taskList->ID.">".$taskList->name."</option>";
@@ -848,15 +868,15 @@ foreach($taskLists as $row => $vals){
                 </select>
                 <div id="taskListIDNTError"></div>
 
-                <div class="txtLeft"><label for="deadlineNT">Deadline</label></div>
-                <input type="datetime-local" min="<?php echo date("d-m-Y h:i:s")?>" name="deadlineNT" id="deadlineNT" value="<?php if(isset($valsToValadate["deadlineNT"])){echo $valsToValadate["deadlineNT"];}?>">
-                <div id="deadlineNTError"></div>
+                <div class="txtLeft"><label for="deadlineNTK">Deadline</label></div>
+                <input type="datetime-local" min="<?php echo date("d-m-Y h:i:s")?>" name="deadlineNTK" id="deadlineNTK" value="<?php if(isset($valsToValadate["deadlineNTK"])){echo $valsToValadate["deadlineNTK"];}?>">
+                <div id="deadlineNTKError"></div>
 
-                <div class="txtLeft"><label for="priorityNT">Priority</label></div>
-                <input onclick="changePriority('priorityNT')" type='text' name='priorityNT' id='priorityNT' class='button' value="<?php if(isset($valsToValadate["priorityNT"])){echo $valsToValadate["priorityNT"];}else{echo'medium';}?>"readonly>
-                <div id="priorityNTError"></div>
+                <div class="txtLeft"><label for="priorityNTK">Priority</label></div>
+                <input onclick="changePriority('priorityNTK')" type='text' name='priorityNTK' id='priorityNTK' class='button' value="<?php if(isset($valsToValadate["priorityNTK"])){echo $valsToValadate["priorityNTK"];}else{echo'medium';}?>"readonly>
+                <div id="priorityNTKError"></div>
 
-                <input type="submit" name='submitNT' id='submitNT' class="green"value="Create!">
+                <input type="submit" name='submitNTK' id='submitNTK' class="green"value="Create!">
             </form>
             <script> errorMsg(<?php if (isset($errorsT)){ echo json_encode($errorsT);} // need the json encode part ?>)  </script> 
             <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>

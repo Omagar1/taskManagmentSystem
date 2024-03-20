@@ -6,7 +6,7 @@ function deleteID($IDTodelete, $deleteFromTable, $con, $whereCondition="ID"){
         $qry = "DELETE FROM " . $deleteFromTable. " WHERE " . $whereCondition ." = ?;";
         $stmt = $con->prepare($qry);
         $stmt->execute([$IDTodelete]);
-        $msg = "<p><b class = 'success'>Deletion Completed</b></p>";
+        //$msg = "<p><b class = 'success'>Deletion Completed</b></p>";
 
         //so deleation is cascaded down all the relationaships 
         $lastId = $con->lastInsertId(); // in the case where the $whereCondition is not the Primary key of the record 
@@ -17,7 +17,7 @@ function deleteID($IDTodelete, $deleteFromTable, $con, $whereCondition="ID"){
             case "tasklist":
                 deleteID($lastId, "task", $con, "taskListID");
                 break;
-            case "stage":
+            case "task":
                 deleteID($lastId, "stage", $con, "taskID");
                 break;
         }
