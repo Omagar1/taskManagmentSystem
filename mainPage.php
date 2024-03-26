@@ -485,10 +485,7 @@ function changeWeightingsInDB(taskID, reload=false){
 }
 
 function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
-    //console.log("weighting"+taskID+stageID+"SG"); //test
-    var tag = document.getElementById("weighting"+taskID+stageID+"SG")
-    //console.log(tag); //test
-    tag.classList.replace("even","unEven");
+    evenUneven(taskID, stageID);
     changeWeighting(taskID,numberExtra);
 
 }
@@ -505,6 +502,15 @@ function addNewStage(taskID, hideOneStageDisplay=false){ // displays create fiel
 
     //change weighting on stages existing stages
     changeWeighting(taskID,0);
+}
+
+function cancelNewStage(taskID, stageCount){
+    document.getElementById("newStageRow"+taskID).classList.add("hidden");
+    console.log(stageCount); 
+    if(Number(stageCount) == 1){
+        document.getElementById("oneStageDisplay"+taskID).classList.replace("hidden", "showing");
+        document.getElementById("multiStageDisplay"+taskID).classList.replace("showing", "hidden");
+    }
 }
 
 
@@ -524,8 +530,27 @@ function createNewStage(taskID){ // adds new stage to DB
     
 }
 
-function evenUneven(stageID, taskID, evenVal){
-    // chnage button display
+function evenUneven(stageID, taskID){ //toggle even value 
+    //getting current val
+    var weightingTag = document.getElementById("weighting"+stageID+"SG");
+    var evenButton = document.getElementById("evenButton"+stageID+"SG");
+    var isEven; 
+    // change display
+    if(weightingTag.classList.contains("even")){
+        isUnEven = false;
+        weightingTagclassList.replace("even","unEven");
+        evenButton.innerHTML = "Even"
+    }else if(weightingTag.classList.contains("unEven")){
+        isUnEven = true;
+        weightingTagclassList.replace("unEven","even");
+        evenButton.innerHTML = "Uneven"
+    }
+    //chanage in DB
+    var updateData = {ID: Number(stageID), unEvenWeighting: isUnEven, table:"stage"}
+    console.log(updateData); //test 
+    useAJAXedit(updateData);
+
+
     // change if uneven to even change weightings to reflect that
 }
 
@@ -739,8 +764,8 @@ foreach($taskLists as $row => $vals){
                                 <tr>
                                     <th class="clear textWhite"><b>Stages</b></th>
                                     <th class="clear textWhite"><b>Weighting</b></th>
+                                    <th class="clear textWhite"><b></b></th>
                                     <th class="clear textWhite"><b>Mark as Complete</b></th>
-                                    <th class="clear textWhite"><b>Edit</b></th>
                                     <th class="clear textWhite"><button onclick="addNewStage(<?php echo $task->ID; ?>)" id="addNewStageButton<?php echo $task->ID; ?>" class = "button green">Add New Stage</button></th>
                                 </tr>
                                 
@@ -748,19 +773,23 @@ foreach($taskLists as $row => $vals){
                                     <?php //var_dump( $stage->unEvenWeighting); //test?>
                                     <tr id = "stage<?php echo $stage->ID?>" class="stagesOfTask<?php echo $task->ID?>">
                                         <td class='clear'>
-                                            <?php echo $stage->name?>
+                                            <button onclick="allowEdit('name', <?php echo $stage->ID;?>, 'SG')" class="button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->name?></button>
+                                            <input onclick = "allowEdit('name' , <?php echo $stage->ID;?>,'SG')" type = "text" id = "nameInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "nameInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->name; ?>"/>
                                         </td>
                                         <td class='clear'>
-                                            <div id="weighting<?php echo $stage->ID?>SG" class ="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?>"><?php echo $stage->weighting?>%</div>
+                                            <button onclick="allowEdit('name', <?php echo $stage->ID;?>, 'SG')" id="weighting<?php echo $stage->ID?>SG" class="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?> button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->weighting?>%</button>
+                                            <input onclick = "allowEdit('name' , <?php echo $stage->ID;?>,'SG')" onkeyup="changeWeightingToUnEven(<?php echo $task->ID. ', '.  $stage->ID;?>)" type = "text" id = "nameInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "nameInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->weighting?>%"/>
+                                        </td>
+                                        <td class='clear'>
+                                            <button onclick="evenUneven(<?php echo $stage->ID?> , <?php echo $stage->unEvenWeighting?>)" id="evenButton<?php echo $stage->ID?>SG" class="button"><?php echo ($stage->unEvenWeighting == 1 )? "Uneven" : "Even"?></button>
                                         </td>
                                         <td class='clear'>
                                             <button onclick="completeStage(<?php echo $stage->ID?>)" id="complete<?php echo $stage->ID?>SG" class="stageButton <?php echo ($stage->complete == 1)?  "green": "" ?>">✓</button>
-                                        </td>
-                                        <td class='clear'>
-                                            <button onclick="evenUneven(<?php echo $stage->ID?> , <?php echo $stage->unEvenWeighting?> )" class="button"><?php echo ($stage->unEvenWeighting == 1 )? "Uneven" : "Even"?></button>
                                         </td>                                        
                                         <td class='clear'>
-                                            <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage',<?php echo $task->ID?> )" class="button red">Remove</button>
+                                            <?php if(count($task->stages) > 1 ):?>
+                                                <button onclick="useAJAXdelete(<?php echo $stage->ID?>, 'stage',<?php echo $task->ID?> )" class="button red">Remove</button>
+                                            <?php endif?>
                                         </td>
                                     </tr>
                                 <?php endforeach ?>
@@ -775,9 +804,10 @@ foreach($taskLists as $row => $vals){
                                         <input onkeyup="changeWeightingToUnEven(<?php echo $task->ID; ?>,'N', 0 )" id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" class ="weighting<?php echo $task->ID?>SG even" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
                                     </td>
                                     <td class='clear'>
-                                        <input id="complete<?php echo $task->ID; ?>NSG" class="stageButton" type="checkbox" value=""/>
+                                        
                                     </td>
                                     <td class='clear'>
+                                        <input id="complete<?php echo $task->ID; ?>NSG" class="stageButton" type="checkbox" value=""/>
                                     </td>
                                     <td class='clear'>
                                         <button onclick="cancelNewStage(<?php echo $task->ID . ',' . count($task->stages) ?>)" class="button red">cancel</button> 

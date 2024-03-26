@@ -191,7 +191,9 @@ function head($pageName, $extra = null){
 				// hiding all input elements
 				var allInputTags = document.getElementsByClassName("editInputs");
 				var allButtonTags = document.getElementsByClassName("editButtons");
+				
 				for (let i = 0; i < allInputTags.length; i++) {
+					console.log(allButtonTags[i]);
 					allInputTags[i].classList.add("hidden");
 					allButtonTags[i].classList.remove("hidden");
 				}
