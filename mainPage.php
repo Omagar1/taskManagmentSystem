@@ -370,8 +370,9 @@ function useAJAXdelete(IDToDelete,tableFrom, extra=null){
                 hideTask(IDToDelete);
             }else if( tableFrom == "stage"){
                 hideStage(IDToDelete);
-                changeWeightingsInDB(extra);
                 changeWeighting(extra);
+                changeWeightingsInDB(extra);
+                
             }
             clearGenralErrorMsg();
         }else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
@@ -523,7 +524,7 @@ function createNewStage(taskID){ // adds new stage to DB
     
 }
 
-function evenUneven(stageID, evenVal){
+function evenUneven(stageID, taskID, evenVal){
     // chnage button display
     // change if uneven to even change weightings to reflect that
 }

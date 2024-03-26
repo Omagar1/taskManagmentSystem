@@ -31,14 +31,14 @@ function editRow($editedVals, $editTable, $con){
         //echo " qry: ".$qry; //test
         $result = $stmt->execute();
         $rowCount = $stmt->rowCount();
-        
+        $stmt->debugDumpParams(); //test
         if($rowCount =='0'){ 
-            // echo "Failed";
+            echo "Failed";
             // echo "qry: ". $qry;
             // echo "result: ";
             // var_dump($result);
             // var_dump($editedVals);
-            $stmt->debugDumpParams();
+            
         }
         else{
             echo "Success";
