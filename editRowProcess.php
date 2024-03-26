@@ -1,9 +1,10 @@
+
 <?php
 
 function editRow($editedVals, $editTable, $con){
     try{
         // bulding a Qry
-        //var_dump($editedVals);//test
+        var_dump($editedVals);//test
         $qry = "UPDATE " . $editTable . " SET";
         // adding the columns to update 
         foreach ($editedVals as $column => $valToCheck){
@@ -20,22 +21,24 @@ function editRow($editedVals, $editTable, $con){
         // binding params
         $count = 0; 
         foreach ($editedVals as $column => &$val){// need & for bind param
-            if($val == "false" or $val == "true"){// string to bool 
-                $val = filter_var($val, FILTER_VALIDATE_BOOLEAN);
-            }
             $bindStr = ":".$column;
             //echo $bindStr = " :".$column." Val: ".$val; //test
             //echo $val;//test
-            $stmt->bindParam($bindStr, $val);
+            $stmt->bindValue($bindStr, $val);
             $count++;
         }
         //echo " count: ".$count; //test
         //echo " qry: ".$qry; //test
         $result = $stmt->execute();
         $rowCount = $stmt->rowCount();
-
-        if($rowCount =='0'){ // 
-            echo "Failed";
+        
+        if($rowCount =='0'){ 
+            // echo "Failed";
+            // echo "qry: ". $qry;
+            // echo "result: ";
+            // var_dump($result);
+            // var_dump($editedVals);
+            $stmt->debugDumpParams();
         }
         else{
             echo "Success";

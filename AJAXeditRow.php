@@ -7,6 +7,20 @@ require_once "dbConnect.php";
 $table = $_GET["table"]; 
 unset($_GET["table"]);
 
-editRow($_GET, $table, $conn);
+// validtion
+$editedVals; 
+foreach($_GET as $column => $val){ // gets the data into correct formats
+    if($val == "false" or $val == "true"){// string to bool 
+        $val = filter_var($val, FILTER_VALIDATE_BOOLEAN);
+    }elseif($column == "ID" ){
+        $val = intval($val);
+    }elseif($column == "weighting"){
+        $val = floatval($val); 
+    }
+    $editedVals[$column] = $val; 
+}
+
+
+editRow($editedVals, $table, $conn);
 
 ?>

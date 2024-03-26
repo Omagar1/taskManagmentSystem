@@ -48,7 +48,7 @@ Or (isset($_POST["tokenNTK"]) And $_SESSION["tokenNTK"] == $_POST["tokenNTK"]
 Or (isset($_POST["tokenETK"]) And $_SESSION["tokenETK"] == $_POST["tokenETK"]) 
 Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )){
     
-    echo " valadation Ran"; //test
+    echo "valadation Ran"; //test
     
     //var_dump($OpenTabs);
     $valsToValadate = $_POST;
@@ -165,13 +165,6 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         echo "new stage Ran";// test
         unset($valsToValadate["tokenNSG"]);
         $result = addRow($valsToValadate, "stage", $conn);
-        if($result != false){
-            ?> 
-            <script>changeWeightingsInDB(<?php echo $valsToValadate["taskID"]?>, true ) // change to  end bc loading stuff </script>
-            
-            <?php
-        }
-        
         unset($valsToValadate);
     }
 
@@ -474,12 +467,12 @@ function changeWeighting(taskID, numberExtra=-1){
 function changeWeightingsInDB(taskID, reload=false){
     //change weightings in DB
     var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
-    
+    console.log("weightings to change: "+ weightingsToChange);
     for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even excluding new satge weighting 
         var stageID = weighting.id.replace("weighting","").replace("SG","");
         if (weighting.classList.contains("even") &&  !stageID.includes("N") ){
              
-            var updateData = {ID: stageID, weighting: weighting.innerHTML, table:"stage"}
+            var updateData = {ID: Number(stageID), weighting: Number(weighting.innerHTML.replace("%","")), table:"stage"}
             console.log(updateData); //test 
             useAJAXedit(updateData);
         }
@@ -499,7 +492,7 @@ function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
 
 }
 
-function addNewStage(taskID, hideOneStageDisplay=false){
+function addNewStage(taskID, hideOneStageDisplay=false){ // displays create fields 
     if(hideOneStageDisplay){
         // show multi stage display, hide one stage display
         document.getElementById("oneStageDisplay"+taskID).classList.add("hidden");
@@ -515,8 +508,9 @@ function addNewStage(taskID, hideOneStageDisplay=false){
 
 
 
-function createNewStage(taskID){
+function createNewStage(taskID){ // adds new stage to DB 
     // on submit
+    changeWeightingsInDB(taskID); 
     // create new Stage
     newStageVals = new Map();
     newStageVals.set("name", document.getElementById("name"+taskID+"NSG").value);
@@ -525,7 +519,6 @@ function createNewStage(taskID){
     newStageVals.set("taskID",taskID);
     newStageVals.set("tokenNSG",tokenNSG);
     post("mainPage.php", newStageVals);
-    //other weightings changed after creation in valadations by uses of above changeWeightingsInDB()
 
     
 }
@@ -919,6 +912,11 @@ foreach($taskLists as $row => $vals){
         ?>
         changeTab("<?php if (isset($_SESSION["currentDisplay"]) And $_SESSION["currentDisplay"]!="" ){ echo $_SESSION["currentDisplay"];}else{echo "all";} ?>")
         // closing new task List tab if opended and new task list is created
+        //
+        // if(typeof changeWeightingsInDB_IDtoChange !== 'undefined' ){
+        //     changeWeightingsInDB(changeWeightingsInDB_IDtoChange, true );
+        // }
+
         </script>
              
     </div>
