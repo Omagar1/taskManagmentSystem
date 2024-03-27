@@ -97,8 +97,8 @@ function head($pageName, $extra = null){
 				console.log("editInputs" + editTag);//test
 				var allEditInputTags = document.getElementsByClassName("editInputs" + editTag);
 				var allEditButtonTags = document.getElementsByClassName("editButtons" + editTag);
-				console.log(allEditInputTags); //test
-				console.log(allEditButtonTags); //test
+				//console.log(allEditInputTags); //test
+				//console.log(allEditButtonTags); //test
 				// showing only the ones clicked 
 				for (let i = 0; i < allEditInputTags.length; i++) {
 					allEditButtonTags[i].classList.add("hidden");
@@ -106,6 +106,7 @@ function head($pageName, $extra = null){
 				}
 				editedRowID = IDToChange; // so saveAndSubit() knows what row to update in the DB
 				typeEditing = extra;
+				console.log("columnName: " + columnName)
 				addToEditedColumns(columnName)
 				//console.log(columnName);
 				//old
@@ -168,7 +169,7 @@ function head($pageName, $extra = null){
 				//var editedRow = document.getElementsByClassName("editInputsID" + editedRowID);
 				for (let i = 0; i < editedColumns.length; i++) {
 					var tagToGrab = editedColumns[i] + "Input" + editedRowID + extra;
-					//console.log(tagToGrab);//test
+					console.log(tagToGrab);//test
 					var editedValElement = document.getElementById(tagToGrab);
 					console.log(editedValElement)//test 
 					if (editedValElement.tagName == "select"){
@@ -182,6 +183,8 @@ function head($pageName, $extra = null){
 					editedRowValues.set("tokenETL", tokenETL);
 				}else if(extra == "TK" ){
 					editedRowValues.set("tokenETK", tokenETK);
+				}else if(extra == "UR"){
+					editedRowValues.set("tokenEUR", tokenEUR);
 				}
 				 
 				post("<?php echo $pageName; ?>", editedRowValues); 
@@ -199,6 +202,7 @@ function head($pageName, $extra = null){
 				}
 				//noNewRow(extra) 
 				hideSaveButton();
+				
 			}
 
 			function deleteRow(IDtoDelete, pageFrom){
@@ -288,6 +292,66 @@ function head($pageName, $extra = null){
 				msgElement.innerHTML = "";
 				msgElement.classList = ""; 
 			}
+			function useAJAXedit(editData){
+				addGenralErrorMsg("editing...", "green");
+				var editDataString = ""; 
+				for(const [key, value] of Object.entries(editData)){
+					editDataString = editDataString + key +"="+ value+"&";
+				}
+				editDataString = editDataString.slice(0, -1); // removeing last & so no errors
+				
+				console.log("editDataString: " + editDataString) //test
+				// upadating the DB
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					console.log("edit responce: "+this.responseText)
+					clearGenralErrorMsg();
+					return this.responseText;
+				}else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
+					addGenralErrorMsg("editing failed; oops!", "red");
+				}
+				};
+
+				
+				xmlhttp.open("GET", "AJAXeditRow.php?" + editDataString , true);
+				xmlhttp.send()
+			}
+
+
+			function useAJAXdelete(IDToDelete,tableFrom, extra=null){
+				
+				if (confirm("are you sure?")) {
+					// loading msg 
+					addGenralErrorMsg("Removing " + tableFrom + "...", "green");
+					
+					//from data base - using ajax 
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+					if (this.readyState == 4 && this.status == 200) {
+						// document.getElementById("msg").innerHTML = this.responseText;
+						console.log("delete responce: "+this.responseText);
+						//visual - only if DB change worked  
+						if(tableFrom == "tasklist"){
+							closeTaskList(IDToDelete);// if open 
+							document.getElementById("allRow"+IDToDelete).classList.add("hidden");
+						}else if(tableFrom == "task"){
+							hideTask(IDToDelete);
+						}else if( tableFrom == "stage"){
+							hideStage(IDToDelete);
+							changeWeighting(extra);
+							changeWeightingsInDB(extra);
+							
+						}
+						clearGenralErrorMsg();
+					}else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
+						addGenralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");
+					}
+					};
+					xmlhttp.open("GET", "AJAXdelete.php?ID=" + IDToDelete + "&table=" + tableFrom, true);
+					xmlhttp.send();
+				} 
+			}
 		</script>
 	
 	<?php
@@ -310,20 +374,23 @@ function navBar($displaybuttons,$currentPageName = null){
         <nav>
             <img class="logoImage" src = "./imagesTMS/logoNoBG.png" alt = "Logo"/>
 		    
-            <?php 
-			if (isset($_SESSION["loggedIn"])){
-				echo"
-				<h1>Welcome ".$_SESSION['username']."</h1>
+            <?php if (isset($_SESSION["loggedIn"])): ?>
+				
+				<h1>Welcome <?php echo $_SESSION['username'];?></h1>
 				<a href='LOProcess.php' class = 'button'>Log Out</a>
-            	<button>Cog</button>
-				";
-			}else{
+				<?php if($currentPageName == "settings.php"):?>
+					<a href="mainPage.php" class ="button">Back</a>
+				<?php else:?>
+					<a href="settings.php" class ="button">Settings</a>
+				<?php endif?>
+            	
+				
+			<?php else:?>
 
-				echo"<h1>Task Managment System</h1>
-				<div></div>" 						// prints empty div to centre title
-				; 
-			}
-			?>
+				<h1>Task Managment System</h1>
+				<div></div><!--  prints empty div to centre title -->
+				
+			<?php endif?>
             
         </nav>
 	</header>
@@ -399,29 +466,28 @@ function getNameFromID($ID,$con){
 	return implode($stmt->fetch(PDO::FETCH_ASSOC));
 }
 
-function footer()
+function footer($pageName = "")
 {
 	?>
 	<footer id="footer" class="bottom">
 		<div id="genralErrorMsg" class=""></div>
-		<?php 
-			if (isset($_SESSION["loggedIn"])){
-				echo"
+		<?php if (isset($_SESSION["loggedIn"])): ?>
+				<?php if($pageName == "mainPage.php"):?>
 				<div id = 'normalFooterButtons' class = 'showing'>
 					<button onclick='newTaskList()'class='button green'>New Tasklist</button>
 					<button onclick='newTask()' class='button green'>New Task</button>
 				</div>
-
+				<?php else:?>
+				<div id="normalFooterButtons"></div><!-- empyt div so functions still work -->
+				
+				<?php endif;?> 
 				<div id = 'editingFooterButtons' class = 'hidden'>
 					<h2>Editting:</h2>
 					<button id = 'saveButton' class = 'button green ' onclick = 'saveAndSubmit(typeEditing)'>Save</button>
 					<button id = 'cancelButton' class = 'button red ' onclick = 'cancel()'>Cancel</button>
 				</div>
-				";
-			}else{
-
-			}
-		?>
+				
+			<?php endif;?> 
 		<p>Background image created using AI image generator from craiyon.com</p>
 	</footer>
 	<?php

@@ -3,10 +3,10 @@ ob_start(); // so that redirect works
 session_start();
 require "functions.php";
 require_once "dbConnect.php";
-// require("editRowProcess.php"); not implemented yet 
+
 require("addRowProcess.php");
 require "deleteRowProcess.php";
-require "editRowProcess.php"
+require "editRowProcess.php";
 ?>
 
 <!DOCTYPE html>
@@ -326,62 +326,6 @@ function newTask(){
     if(!openTabsIDQueue.includes("newTask")){ // so dubble clicks dont mess up the tab positions 
         openTaskList("newTask");
     }  
-}
-function useAJAXedit(editData){
-        var editDataString = ""; 
-        for(const [key, value] of Object.entries(editData)){
-            editDataString = editDataString + key +"="+ value+"&";
-        }
-        editDataString = editDataString.slice(0, -1); // removeing last & so no errors
-        
-        console.log("editDataString: " + editDataString) //test
-        // upadating the DB
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            console.log("edit responce: "+this.responseText)
-            return this.responseText;
-        }
-        };
-    
-        
-        xmlhttp.open("GET", "AJAXeditRow.php?" + editDataString , true);
-        xmlhttp.send()
-}
-
-
-function useAJAXdelete(IDToDelete,tableFrom, extra=null){
-    
-    if (confirm("are you sure?")) {
-        // loading msg 
-        addGenralErrorMsg("Removing " + tableFrom + "...", "green");
-        
-        //from data base - using ajax 
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            // document.getElementById("msg").innerHTML = this.responseText;
-            console.log("delete responce: "+this.responseText);
-            //visual - only if DB change worked  
-            if(tableFrom == "tasklist"){
-                closeTaskList(IDToDelete);// if open 
-                document.getElementById("allRow"+IDToDelete).classList.add("hidden");
-            }else if(tableFrom == "task"){
-                hideTask(IDToDelete);
-            }else if( tableFrom == "stage"){
-                hideStage(IDToDelete);
-                changeWeighting(extra);
-                changeWeightingsInDB(extra);
-                
-            }
-            clearGenralErrorMsg();
-        }else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
-            addGenralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");
-        }
-        };
-        xmlhttp.open("GET", "AJAXdelete.php?ID=" + IDToDelete + "&table=" + tableFrom, true);
-        xmlhttp.send();
-    } 
 }
 
 function hideStage(stageID){
@@ -880,7 +824,7 @@ foreach($taskLists as $row => $vals){
                 <div id="taskListNameError"></div>
 
                 <div class="txtLeft"><label for="deadlineNTL">Deadline</label></div>
-                <input type="datetime-local" min="<?php echo date("d-m-Y h:i:s")?>" name="deadlineNTL" id="deadlineNTL" value="<?php if(isset($valsToValadate["deadlineNTL"])){echo $valsToValadate["deadlineNTL"];}?>">
+                <input type="datetime-local" min="<?php echo date("d-m-Y h:i:s")// wrong format? ?>" name="deadlineNTL" id="deadlineNTL" value="<?php if(isset($valsToValadate["deadlineNTL"])){echo $valsToValadate["deadlineNTL"];}?>">
                 <div id="deadlineNTLError"></div>
 
                 <div class="txtLeft"><label for="priorityNTL">Priority</label></div>
@@ -981,5 +925,5 @@ foreach($taskLists as $row => $vals){
 
     
 </body>
-<?php footer(); ?>
+<?php footer($pageName); ?>
 </html>
