@@ -183,6 +183,8 @@ function head($pageName, $extra = null){
 					editedRowValues.set("tokenETL", tokenETL);
 				}else if(extra == "TK" ){
 					editedRowValues.set("tokenETK", tokenETK);
+				}else if(extra == "SG"){
+					editedRowValues.set("tokenESG", tokenESG);
 				}else if(extra == "UR"){
 					editedRowValues.set("tokenEUR", tokenEUR);
 				}
@@ -251,7 +253,7 @@ function head($pageName, $extra = null){
 				
 					// change contain to show
 				var containerToShow = document.getElementById(tagToChangeTo + "Container");
-				//console.log(containerToShow); //test
+				//console.log("containerToShow"+containerToShow); //test
 				containerToShow.classList.add("showing");
 				containerToShow.classList.remove("hidden");
 			}
@@ -375,7 +377,7 @@ function navBar($displaybuttons,$currentPageName = null){
             <img class="logoImage" src = "./imagesTMS/logoNoBG.png" alt = "Logo"/>
 		    
             <?php if (isset($_SESSION["loggedIn"])): ?>
-				
+				<div></div><!--  prints empty div to centre title -->
 				<h1>Welcome <?php echo $_SESSION['username'];?></h1>
 				<a href='LOProcess.php' class = 'button'>Log Out</a>
 				<?php if($currentPageName == "settings.php"):?>

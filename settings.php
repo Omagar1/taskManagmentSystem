@@ -74,7 +74,7 @@ if (isset($_POST["tokenEUR"]) And $_SESSION["tokenEUR"] == $_POST["tokenEUR"])  
         }
         // ---------- password valadtaion ----------
         if($column == "password"){
-            if($valToCheck != $valsToValadate["comfirmPword"]){
+            if($valToCheck != $valsToValadate["PasswordComfirm"]){
                 $msg = "Passwords must match";
                 $errors["Password"] = $msg;
                 $errors["PasswordComfirm"] = $msg;
@@ -91,8 +91,9 @@ if (isset($_POST["tokenEUR"]) And $_SESSION["tokenEUR"] == $_POST["tokenEUR"])  
                 $valadationPassed = false;
             }else{
                 // password valadation passed so setting up SQL 
-                unset($valsToValadate["comfirmPword"]); 
+                unset($valsToValadate["PasswordComfirm"]); 
                 $valsToValadate["password"] = password_hash($valsToValadate["password"], PASSWORD_DEFAULT);
+                unset($valsToValadate["submitPR"]);
             }
         }
 
@@ -125,53 +126,84 @@ $_SESSION["tokenEUR"] = $tokenEUR; // for new task lists
     <?php navBar(false, basename($_SERVER["PHP_SELF"]) ); ?>
     </div>
     <div id="main">
-        <div class="taskHeader">
-            <h2> Mannage <?php echo $row["username"];?>'s Account</h2>
+        
+        <div class="tabs">
+            <button onclick="changeTab('account')"  id="accountTab" class="tab selected ">Account</button>
+            <script>shiftTab('account', 0)</script>
+            <button onclick="changeTab('changePassword')"  id="changePasswordTab" class="tab">Change Password</button>
+            <script>shiftTab('changePassword', 1)</script>
         </div>
+        <div id="accountContainer" class = "showing">
+            <div class="taskHeader">
+                <h2> Mannage <?php echo $row["username"];?>'s Account</h2>
+            </div>
 
-        <table class="taskTable">
-            <tr class="taskTr">
-                <td class="taskTd tableDisplay">Username: </td>
-                <td class="taskTd tableDisplay">
-                    <button onclick = "allowEdit('username' , <?php echo $row['ID']?>,'UR')" class=" clear editButtons editButtonsID<?php echo $row['ID']?>UR" id="<?php echo $row['ID'] ?>usernameUR"><p><?php echo $row["username"] ?></p></button>
-                    <input onclick = "allowEdit('username' , <?php echo $row['ID']?>,'UR')" type = "text" id = "usernameInput<?php echo $row['ID']?>UR" class =" inputbutton hidden editInputs editInputsID<?php echo $row['ID']?>UR" name = "usernameInput<?php echo $row['ID']?>UR"  value = "<?php echo  $row['username'] ?>"/>
-                    <div id="usernameError"></div>
-                </td>
-            
+            <table class="taskTable">
+                <tr class="taskTr">
+                    <td class="taskTd tableDisplay">Username: </td>
+                    <td class="taskTd tableDisplay">
+                        <button onclick = "allowEdit('username' , <?php echo $row['ID']?>,'UR')" class=" clear editButtons editButtonsID<?php echo $row['ID']?>UR" id="<?php echo $row['ID'] ?>usernameUR"><p><?php echo $row["username"] ?></p></button>
+                        <input onclick = "allowEdit('username' , <?php echo $row['ID']?>,'UR')" type = "text" id = "usernameInput<?php echo $row['ID']?>UR" class =" inputbutton hidden editInputs editInputsID<?php echo $row['ID']?>UR" name = "usernameInput<?php echo $row['ID']?>UR"  value = "<?php echo  $row['username'] ?>"/>
+                        <div id="usernameError"></div>
+                    </td>
+                
 
-            </tr>
-            <tr class="taskTr">
-                <td class="taskTd tableDisplay">Password: </td>
-                <td class="taskTd tableDisplay">
-                    <a href="resetPassword.php" class="button red" id="<?php echo $row['ID'] ?>passwordUR"> Reset Password</a>
-                    
-                    <div id="passwordError"></div>
-                </td>
-            </tr>
-            <tr class="taskTr">
-                <td class="taskTd tableDisplay">Email: </td>
-                <td class="taskTd tableDisplay">
-                    <button onclick = "allowEdit('email' , <?php echo $row['ID']?>,'UR')" class=" clear editButtons editButtonsID<?php echo $row['ID']?>UR" id="<?php echo $row['ID'] ?>emailUR"><p><?php echo $row["email"] ?></p></button>
-                    <input onclick = "allowEdit('email' , <?php echo $row['ID']?>,'UR')" type = "text" id = "emailInput<?php echo $row['ID']?>UR" class =" inputbutton hidden editInputs editInputsID<?php echo $row['ID']?>UR" name = "emailInput<?php echo $row['ID']?>UR"  value = "<?php echo  $row['email'] ?>"/>
-                    <div id="emailError"></div>
-                </td>
-            </tr>
-            <tr class="taskTr">
-                <td class="taskTd tableDisplay">collabCode</td>
-                <td class="taskTd tableDisplay">
-                    <p class="" id="<?php echo $row['ID'] ?>collabCodeUR"><?php echo $row["collabCode"] ?></p>
-                    <button onclick="newColabCode(<?php echo $row['ID'] ?>)"class="button">New Code</button>
-                    
-                    <div id="collabCodeError"></div>
-                </td>
-            </tr>
-            <script> errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)  </script>
-            
+                </tr>
+                <tr class="taskTr">
+                    <td class="taskTd tableDisplay">Password: </td>
+                    <td class="taskTd tableDisplay">
+                        <button onclick="changeTab('changePassword')"class="button red" id="<?php echo $row['ID'] ?>passwordUR"> Reset Password</button>
+                        
+                        <div id="passwordError"></div>
+                    </td>
+                </tr>
+                <tr class="taskTr">
+                    <td class="taskTd tableDisplay">Email: </td>
+                    <td class="taskTd tableDisplay">
+                        <button onclick = "allowEdit('email' , <?php echo $row['ID']?>,'UR')" class=" clear editButtons editButtonsID<?php echo $row['ID']?>UR" id="<?php echo $row['ID'] ?>emailUR"><p><?php echo $row["email"] ?></p></button>
+                        <input onclick = "allowEdit('email' , <?php echo $row['ID']?>,'UR')" type = "text" id = "emailInput<?php echo $row['ID']?>UR" class =" inputbutton hidden editInputs editInputsID<?php echo $row['ID']?>UR" name = "emailInput<?php echo $row['ID']?>UR"  value = "<?php echo  $row['email'] ?>"/>
+                        <div id="emailError"></div>
+                    </td>
+                </tr>
+                <tr class="taskTr">
+                    <td class="taskTd tableDisplay">collabCode</td>
+                    <td class="taskTd tableDisplay">
+                        <p class="" id="<?php echo $row['ID'] ?>collabCodeUR"><?php echo $row["collabCode"] ?></p>
+                        <button onclick="newColabCode(<?php echo $row['ID'] ?>)"class="button">New Code</button>
+                        
+                        <div id="collabCodeError"></div>
+                    </td>
+                </tr>
+                <script> errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)  </script>
+            </table>
+        </div>
+        <div id="changePasswordContainer" class="hidden">
+            <form action="settings.php" method="post">
+                <label for="PwdNew">Enter New Password:</label> <br>
+                <input type="password" id="password" name="password" value="<?php
+                if (isset($valsToValadate["password"])) {
+                    echo $valsToValadate["password"];
+                } else {
+                    echo "";
+                }
+                ?>"><br>
+                <label for="PasswordComfirm"> Confirm Password:</label> <br>
+                <input type="password" id="PasswordComfirm" name="PasswordComfirm" value="<?php
+                if (isset($valsToValadate["PasswordComfirm"])) {
+                    echo $valsToValadate["PasswordComfirm"];
+                } else {
+                    echo "";
+                }
+                ?>"><br>
+                <input type="hidden" id="ID" name="ID" value="<?php echo $_SESSION["userID"]; ?>">
+                <input type="hidden" id="tokenEUR" name="tokenEUR" value="<?php echo $tokenEUR; ?>">
+                <input type="submit" name="submitPR" class="button green" value="Save">
 
-        </table>
+            </form>
+        </div>
     </div>
 
-
+s
     <?php footer(); ?>
 </body>
 

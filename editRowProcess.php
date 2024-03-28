@@ -31,21 +31,22 @@ function editRow($editedVals, $editTable, $con){
         //echo " qry: ".$qry; //test
         $result = $stmt->execute();
         $rowCount = $stmt->rowCount();
-        $stmt->debugDumpParams(); //test
+        //$stmt->debugDumpParams(); //test
         if($rowCount =='0'){ 
-            echo "Failed";
+            //echo "Failed";
             // echo "qry: ". $qry;
             // echo "result: ";
             // var_dump($result);
             // var_dump($editedVals);
+            return false;
             
-        }
-        else{
-            echo "Success";
+        }else{
+            //echo "Success";
+            return true;
         }
         //var_dump($stmt); //test
         //var_dump($editedVals); //test
-        return $result; 
+        //return $result; 
     } catch(PDOException $e) {
         echo "Error : ".$e->getMessage(); // dev error mesage 
         //var_dump($stmt); //test

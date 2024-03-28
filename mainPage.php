@@ -26,7 +26,7 @@ function getPriorityVal($PriorityVal, $priorities,){
 
 // ---------------------------------------------------- task List Validation -------------------------------------------------
 $OpenTabs = [] ;// so reloading dosent close them
-function nameInDB($nameToCheck,$con){ // change !!!!!!!!!!!!!!!!!!!!!
+function nameInDB($nameToCheck,$con){ // change ?
       // qry to get existing usernames for valadation
       $qry = "SELECT `name` FROM tasklist WHERE `name` = ? AND ownerID = ?";
       $stmt = $con->prepare($qry);
@@ -44,15 +44,16 @@ var_dump($_POST);//test
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
 if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
 Or (isset($_POST["tokenETL"]) And $_SESSION["tokenETL"] == $_POST["tokenETL"]) 
-Or (isset($_POST["tokenNTK"]) And $_SESSION["tokenNTK"] == $_POST["tokenNTK"] 
+Or (isset($_POST["tokenNTK"]) And $_SESSION["tokenNTK"] == $_POST["tokenNTK"])
 Or (isset($_POST["tokenETK"]) And $_SESSION["tokenETK"] == $_POST["tokenETK"]) 
-Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )){
+Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) 
+Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     
     echo "valadation Ran"; //test
     
     //var_dump($OpenTabs);
     $valsToValadate = $_POST;
-    $errorsTL = []; // id then msg as key pair
+    $errors = []; // id then msg as key pair
     $endtag ="";
     //var_dump($editedVals); //test 
 
@@ -82,19 +83,19 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         //echo $column." ";//test
         if($valToCheck == "" And $column != "deadline" ){ 
             $msg = $column." Must Not Be Empty";
-            $errorsTL[$column] = $msg; 
+            $errors[$column] = $msg; 
         }elseif($column == "name"){
             if(nameInDB($valToCheck,$conn)){
                 $msg = $valToCheck."Task List Already exists";
-                $errorsTL[$column] = $msg; 
+                $errors[$column] = $msg; 
             }
         }elseif($column == "weightig"){
             if($valToCheck > 100 ){
                 $msg = $column." Must not be over 100";
-                $errorsTL[$column] = $msg; 
+                $errors[$column] = $msg; 
             }elseif($valToCheck < 0){
                 $msg = $column." Must not be under 0";
-                $errorsTL[$column] = $msg; 
+                $errors[$column] = $msg; 
             }
         }
         // elseif($column == "deadline" And new DateTime($valToCheck) < date("d/m/Y h:i")  ){
@@ -103,7 +104,7 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         //     echo date("d/m/Y h:i"); //test 
         //     var_dump(new DateTime($valToCheck) < new DateTime(date("d/m/Y h:i"))); //test
         //     $msg = "Deadline Must Be In The Future";
-        //     $errorsTL[$column] = $msg; 
+        //     $errors[$column] = $msg; 
         // }
     }
     // valadation passsed
@@ -112,8 +113,8 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
     if(isset($valsToValadate["deadline"]) And ($valsToValadate["deadline"] == "0000-00-00 00:00:00" Or $valsToValadate["deadline"] == "" )){
         $valsToValadate["deadline"] = null;// must be set as so you can remove a deadline
     } 
-    var_dump($errorsTL);//test
-    if(empty($errorsTL) And isset($_POST["tokenNTL"]) ){ // new task list
+    //var_dump($errors);//test
+    if(empty($errors) And isset($_POST["tokenNTL"]) ){ // new task list
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         $valsToValadate["ownerID"] = $_SESSION["userID"];
         unset($valsToValadate["submit"]);
@@ -129,7 +130,7 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         unset($OpenTabs[0]);
         unset($_POST);
         //var_dump( $OpenTabs);
-    }elseif(empty($errorsTL) And isset($_POST["tokenETL"])){ // edit Task List 
+    }elseif(empty($errors) And isset($_POST["tokenETL"])){ // edit Task List 
         unset($valsToValadate["submitETL"]);
         unset($valsToValadate["tokenETL"]);
         editRow($valsToValadate, "tasklist", $conn);
@@ -137,7 +138,7 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         $_SESSION["currentDisplay"] = $valsToValadate["ID"];
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
-    }elseif(empty($errorsTL) And isset($_POST["tokenNTK"])){ //new task
+    }elseif(empty($errors) And isset($_POST["tokenNTK"])){ //new task
         echo "new task Ran";// test
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         unset($valsToValadate["submit"]);
@@ -152,7 +153,7 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         //close new Task List Tab
         unset($OpenTabs[0]);
         unset($_POST);
-    }elseif(empty($errorsTL) And isset($_POST["tokenETK"])){ //editing task
+    }elseif(empty($errors) And isset($_POST["tokenETK"])){ //editing task
         echo "edit tasks Ran";// test
         unset($valsToValadate["submit"]);
         unset($valsToValadate["token"]);
@@ -161,11 +162,18 @@ Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) )
         //$_SESSION["currentDisplay"] = $result["tasklistID"];
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
-    }elseif(empty($errorsTL) And isset($_POST["tokenNSG"])){
+    }elseif(empty($errors) And isset($_POST["tokenNSG"])){
         echo "new stage Ran";// test
         unset($valsToValadate["tokenNSG"]);
         $result = addRow($valsToValadate, "stage", $conn);
         unset($valsToValadate);
+    }elseif(empty($errors) And isset($_POST["tokenESG"])){
+        echo "edit stage Ran";// test
+        unset($valsToValadate["tokenESG"]);
+        $result =  editRow($valsToValadate, "stage", $conn);
+        unset($valsToValadate);
+    }else{
+        var_dump($errors);//test
     }
 
 }
@@ -207,10 +215,11 @@ const tokenETL = "<?php echo $tokenETL ?>"
 const tokenETK = "<?php echo $tokenETK ?>"
 
 const tokenNSG = "<?php echo $tokenNSG?>"
+const tokenESG = "<?php echo $tokenESG?>"
 //----------------------------------------------------Functions ----------------------------------------------------
 function openTaskList(taskListID){
     
-    if(openTabsIDQueue.length >= maxTabsOpen){
+    if(openTabsIDQueue.length >= maxTabsOpen){ // if to many tabs open
         closeTaskList(openTabsIDQueue[0]); // removes the tasklist opened the first
     }
 
@@ -364,11 +373,14 @@ function completeStage(stageID, oneStageDisplayActive=false){
     useAJAXedit(updateData);
 }
 function changeWeighting(taskID, numberExtra=-1){
-    //numberExtra is for when a new stage is being added it is not set to -1 instead 0
-    // why is numberExtra=-1 when not new stage and 0 when there is a new stage? 
+    //numberExtra is for when a new stage is being added it is not set to -1 instead 1
+    // why is numberExtra=-1 when not new stage and 1 when there is a new stage? 
     // numberOfStagesToConsider is based on the length of the list of elements with the class "weighting"+taskID+"SG",
     // the weighting row for new stage column has the  weighting"+taskID+"SG class so its weighting is changed correctly when displaded
-    // but when its not displayd it will still be got by  getElementsByClassName("weighting"+taskID+"SG") hence the -1 when we dont want new Stage 
+    // but when its not displayd it will still be got by  getElementsByClassName("weighting"+taskID+"SG") hence the -1 when we dont want new Stage
+    // the one comes from the fact that for the edit system to work there is two elements for each stage that needs to change the weightings but only one for the new stage tagfrom
+    // and as we are dividing by two to get the correct amount of stages an even number is needed
+    //the extra 1 simulates if the new stage had two elements with the class "weighting"+taskID+"SG" like the other elements 
     var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
     console.log("weightingsToChange: "+ weightingsToChange); //test
     console.log("weightingsToChange num of : "+ weightingsToChange.length); //test
@@ -376,21 +388,24 @@ function changeWeighting(taskID, numberExtra=-1){
     var percentageLeft = 100.00; // to be used when a stage is unevenly weighted to calculate the new evenWeighting of the rest of the stages
 
     for(const weighting of weightingsToChange){ // first check if there is any uneven weighting this MUST be first  as percentageLeft and  numberOfStagesToConsider must be set before the even weitings are calculated    
-        if (weighting.classList.contains("unEven")){
+        console.log("first loop: " + weighting );
+        if (weighting.classList.contains("unEven") && !weighting.classList.contains("hidden")){
             if(weighting.nodeName == "INPUT"){
                 weightingVal = weighting.value.replace("%",""); //removing the % 
             }else{
                 weightingVal = weighting.innerHTML.replace("%",""); //removing the % 
             }
             percentageLeft = percentageLeft - weightingVal;
+            console.log("percentageLeft: "+percentageLeft)
             numberOfStagesToConsider--; 
         }
     }
     for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even
+        console.log("2nd loop: " + weighting );
         if (weighting.classList.contains("even")){
             let newWeighting = percentageLeft / numberOfStagesToConsider;
             let newWeightingNumber = Number(newWeighting);
-
+            console.log("numberOfStagesToConsider: "+ numberOfStagesToConsider);
             console.log("newWeighting: " + newWeightingNumber + "%"); // Test
             //console.log(newWeightingNumber + " > 0: ", newWeightingNumber > 0); // Test
 
@@ -440,12 +455,14 @@ function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
     weightingTag.classList.replace("even","unEven");
     evenButton.innerHTML = "Uneven"
 
+    changeWeighting(taskID,numberExtra); //change display
+
     //chanage in DB
     var updateData = {ID: Number(stageID), unEvenWeighting: isUnEven, table:"stage"}
     console.log(updateData); //test 
     useAJAXedit(updateData);
     
-    changeWeighting(taskID,numberExtra); //change display
+    
 
 }
 
@@ -464,7 +481,8 @@ function addNewStage(taskID, hideOneStageDisplay=false){ // displays create fiel
 }
 
 function cancelNewStage(taskID, stageCount){
-    document.getElementById("newStageRow"+taskID).classList.add("hidden");
+    document.getElementById("newStageRow"+taskID).classList.replace("showing", "hidden");
+    document.getElementById("weighting"+taskID+"NSG").classList.replace("unEven", "even"); // resetting value to even o it dosent interfear with changeWeighting calculations 
     console.log(stageCount); 
     if(Number(stageCount) == 1){
         document.getElementById("oneStageDisplay"+taskID).classList.replace("hidden", "showing");
@@ -490,7 +508,7 @@ function createNewStage(taskID){ // adds new stage to DB
     
 }
 
-function evenUneven(stageID, taskID){ //toggle even value 
+function evenUneven(stageID, taskID, numberExtra){ //toggle even value 
     //getting current val
     var weightingTag = document.getElementById("weighting"+stageID+"SG");
     var evenButton = document.getElementById("evenButton"+stageID+"SG");
@@ -499,16 +517,17 @@ function evenUneven(stageID, taskID){ //toggle even value
     console.log("weightingTag: "+weightingTag);
     // change display
     if(weightingTag.classList.contains("even")){
-        isUnEven = false;
+        isUnEven = true;
         weightingTag.classList.replace("even","unEven");
         evenButton.innerHTML = "Uneven"
     }else if(weightingTag.classList.contains("unEven")){
-        isUnEven = true;
+        isUnEven = false;
         weightingTag.classList.replace("unEven","even");
         evenButton.innerHTML = "Even"
     }
     //chanage in DB
-    if(stageID[-1] != "N"){
+    console.log("stageID.length: "+stageID.length);//test
+    if(stageID[stageID.length-1] != "N"){
         var updateData = {ID: Number(stageID), unEvenWeighting: isUnEven, table:"stage"}
         console.log(updateData); //test 
         useAJAXedit(updateData);
@@ -517,7 +536,8 @@ function evenUneven(stageID, taskID){ //toggle even value
     }
     
 
-    changeWeighting(taskID); //change display
+    changeWeighting(taskID,numberExtra); //change display
+    changeWeightingsInDB(taskID);
 
 
     // change if uneven to even change weightings to reflect that
@@ -746,8 +766,8 @@ foreach($taskLists as $row => $vals){
                                             <input onclick = "allowEdit('name' , <?php echo $stage->ID;?>,'SG')" type = "text" id = "nameInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "nameInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->name; ?>"/>
                                         </td>
                                         <td class='clear'>
-                                            <button onclick="allowEdit('name', <?php echo $stage->ID;?>, 'SG')" id="weighting<?php echo $stage->ID?>SG" class="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?> button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->weighting?>%</button>
-                                            <input onclick = "allowEdit('name' , <?php echo $stage->ID;?>,'SG')" onkeyup="changeWeightingToUnEven(<?php echo $task->ID. ', '.  $stage->ID;?>)" type = "text" id = "nameInput<?php echo $task->ID;?>TK" class ="weighting<?php echo $task->ID?>SG inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "nameInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->weighting?>%"/>
+                                            <button onclick="allowEdit('weighting', <?php echo $stage->ID;?>, 'SG')" id="weighting<?php echo $stage->ID?>SG" class="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?> button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->weighting?>%</button> 
+                                            <input onclick = "allowEdit('weighting' , <?php echo $stage->ID;?>,'SG')" onkeyup="changeWeightingToUnEven(<?php echo $task->ID. ', '.  $stage->ID;?>)" type = "text" id = "weightingInput<?php echo $stage->ID;?>SG" class ="weighting<?php echo $task->ID?>SG inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "weightingInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->weighting?>%"/>
                                         </td>
                                         <td class='clear'>
                                             <button onclick="evenUneven(<?php echo $stage->ID?> , <?php echo $task->ID?>)" id="evenButton<?php echo $stage->ID?>SG" class="button"><?php echo ($stage->unEvenWeighting == 1 )? "Uneven" : "Even"?></button>
@@ -773,7 +793,7 @@ foreach($taskLists as $row => $vals){
                                         <input onkeyup="changeWeightingToUnEven(<?php echo $task->ID; ?>,'<?php echo $task->ID; ?>N', 1 )" id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" class ="weighting<?php echo $task->ID?>SG even" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
                                     </td>
                                     <td class='clear'>
-                                        <button onclick="evenUneven('<?php echo $task->ID; ?>N' ,<?php echo $task->ID?> )" id="evenButton<?php echo $task->ID?>NSG" class="button">Even</button>
+                                        <button onclick="evenUneven('<?php echo $task->ID; ?>N' ,<?php echo $task->ID?>, 1 )" id="evenButton<?php echo $task->ID?>NSG" class="button">Even</button>
                                         <input type="hidden" id ="unEvenWeighting<?php echo $task->ID; ?>NSG" name="unEvenWeighting<?php echo $task->ID; ?>NSG" value="0">
                                     </td>
                                     <td class='clear'>
@@ -833,7 +853,7 @@ foreach($taskLists as $row => $vals){
 
                 <input type="submit" name='submitNTL' id='submitNTL' class="green"value="Create!">
             </form>
-            <script> errorMsg(<?php if (isset($errorsTL)){ echo json_encode($errorsTL);} // need the json encode part ?>)  </script> 
+            <script> errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)  </script> 
             <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>
         </div>
 
