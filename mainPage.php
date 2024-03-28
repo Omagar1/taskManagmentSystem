@@ -388,8 +388,15 @@ function changeWeighting(taskID, numberExtra=-1){
     var percentageLeft = 100.00; // to be used when a stage is unevenly weighted to calculate the new evenWeighting of the rest of the stages
 
     for(const weighting of weightingsToChange){ // first check if there is any uneven weighting this MUST be first  as percentageLeft and  numberOfStagesToConsider must be set before the even weitings are calculated    
-        console.log("first loop: " + weighting );
-        if (weighting.classList.contains("unEven") && !weighting.classList.contains("hidden")){
+        console.log("first loop: " + weighting.id );
+        // var weightingsConsidered = []; 
+        // var currentStageID = weighting.id.replace("weighting","").replace("Input","").replace("SG","")
+        //console.log("currentStageID: "+currentStageID);
+        //console.log("weightingsConsidered.includes(currentStageID)")
+        console.log("first Condition: "+ (typeEditing == "SG" && weighting.nodeName == "INPUT" && !weighting.classList.contains("ignore")));
+        console.log("seccond Condition: "+(weighting.classList.contains("unEven") && !weighting.classList.contains("ignore")) );
+        if ((typeEditing == "SG" && weighting.nodeName == "INPUT" && (!weighting.classList.contains("ignore") || !weighting.classList.contains("hidden")  )) || (weighting.classList.contains("unEven") && !weighting.classList.contains("ignore"))){
+            //weightingsConsidered.push(currentStageID);
             if(weighting.nodeName == "INPUT"){
                 weightingVal = weighting.value.replace("%",""); //removing the % 
             }else{
@@ -453,10 +460,11 @@ function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
     console.log("weightingTag: "+weightingTag);
     isUnEven = true;
     weightingTag.classList.replace("even","unEven");
-    evenButton.innerHTML = "Uneven"
+    weightingTag.classList.add("ignore");// for changechangeWeighting
+    evenButton.innerHTML = "Uneven";
 
     changeWeighting(taskID,numberExtra); //change display
-
+    changeWeightingsInDB(taskID);
     //chanage in DB
     var updateData = {ID: Number(stageID), unEvenWeighting: isUnEven, table:"stage"}
     console.log(updateData); //test 
@@ -542,6 +550,8 @@ function evenUneven(stageID, taskID, numberExtra){ //toggle even value
 
     // change if uneven to even change weightings to reflect that
 }
+//event listerners
+
 
 
 </script>
@@ -767,7 +777,7 @@ foreach($taskLists as $row => $vals){
                                         </td>
                                         <td class='clear'>
                                             <button onclick="allowEdit('weighting', <?php echo $stage->ID;?>, 'SG')" id="weighting<?php echo $stage->ID?>SG" class="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?> button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->weighting?>%</button> 
-                                            <input onclick = "allowEdit('weighting' , <?php echo $stage->ID;?>,'SG')" onkeyup="changeWeightingToUnEven(<?php echo $task->ID. ', '.  $stage->ID;?>)" type = "text" id = "weightingInput<?php echo $stage->ID;?>SG" class ="weighting<?php echo $task->ID?>SG inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "weightingInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->weighting?>%"/>
+                                            <input onclick = "allowEdit('weighting' , <?php echo $stage->ID;?>,'SG')" onkeydown="changeWeightingToUnEven(<?php echo $task->ID. ', '.  $stage->ID;?>)" type = "text" id = "weightingInput<?php echo $stage->ID;?>SG" class ="weighting<?php echo $task->ID?>SG inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "weightingInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->weighting?>%"/>
                                         </td>
                                         <td class='clear'>
                                             <button onclick="evenUneven(<?php echo $stage->ID?> , <?php echo $task->ID?>)" id="evenButton<?php echo $stage->ID?>SG" class="button"><?php echo ($stage->unEvenWeighting == 1 )? "Uneven" : "Even"?></button>
@@ -790,7 +800,7 @@ foreach($taskLists as $row => $vals){
                                         <input  id="name<?php echo $task->ID; ?>NSG" name ="name<?php echo $task->ID; ?>NSG" type="text" value="New Stage">
                                     </td>
                                     <td class='clear'>
-                                        <input onkeyup="changeWeightingToUnEven(<?php echo $task->ID; ?>,'<?php echo $task->ID; ?>N', 1 )" id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" class ="weighting<?php echo $task->ID?>SG even" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
+                                        <input onkeydown="changeWeightingToUnEven(<?php echo $task->ID; ?>,'<?php echo $task->ID; ?>N', 1 )" id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" class ="weighting<?php echo $task->ID?>SG even ignore" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
                                     </td>
                                     <td class='clear'>
                                         <button onclick="evenUneven('<?php echo $task->ID; ?>N' ,<?php echo $task->ID?>, 1 )" id="evenButton<?php echo $task->ID?>NSG" class="button">Even</button>
@@ -894,6 +904,11 @@ foreach($taskLists as $row => $vals){
             </form>
             <script> errorMsg(<?php if (isset($errorsT)){ echo json_encode($errorsT);} // need the json encode part ?>)  </script> 
             <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>
+        </div>
+        <!-- collab display -->
+
+        <div id="collabContainer" class = "hidden">
+                <!-- use ajax to get data  -->
         </div>
         <!-- All task lists  -->
 

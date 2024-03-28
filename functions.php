@@ -202,7 +202,10 @@ function head($pageName, $extra = null){
 					allInputTags[i].classList.add("hidden");
 					allButtonTags[i].classList.remove("hidden");
 				}
-				//noNewRow(extra) 
+				//noNewRow(extra)
+				if (typeEditing =="SG"){
+					document.getElementById("weighting"+editedRowID+"SG").classList.remove("ignore");//removing the ignore 
+				}
 				hideSaveButton();
 				
 			}
