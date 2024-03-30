@@ -325,12 +325,16 @@ function head($pageName, $extra = null){
 
 
 			function useAJAXdelete(IDToDelete,tableFrom, extra=null){
-				
-				if (confirm("are you sure?")) {
+				if (tableFrom == "tasklistcollab" && userID != extra && userID != IDToDelete){ //extra will be ownerID if tableFrom == "tasklistcollab"
+					addGenralErrorMsg("You cannot remove other users if you are not the owner of the Tasklist", "red");
+				}else if (tableFrom == "tasklist" && userID != extra) { //extra will be ownerID if tableFrom == "tasklist"
+					addGenralErrorMsg("You cannot the Tasklist if you are not the owner of the Tasklist", "red");
+				}else if (confirm("are you sure?")) {
 					// loading msg 
 					addGenralErrorMsg("Removing " + tableFrom + "...", "green");
 					
-					//from data base - using ajax 
+					//from data base - using ajax
+					var deleteUsing = "ID";
 					var xmlhttp = new XMLHttpRequest();
 					xmlhttp.onreadystatechange = function() {
 					if (this.readyState == 4 && this.status == 200) {
@@ -345,15 +349,17 @@ function head($pageName, $extra = null){
 						}else if( tableFrom == "stage"){
 							hideStage(IDToDelete);
 							changeWeighting(extra);
-							changeWeightingsInDB(extra);
-							
+							changeWeightingsInDB(extra);	
+						}else if(tableFrom == "tasklistcollab"){
+							hideUser(IDToDelete); 
+							deleteUsing = "userID";
 						}
 						clearGenralErrorMsg();
 					}else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
 						addGenralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");
 					}
 					};
-					xmlhttp.open("GET", "AJAXdelete.php?ID=" + IDToDelete + "&table=" + tableFrom, true);
+					xmlhttp.open("GET", "AJAXdelete.php?"+deleteUsing+"=" + IDToDelete + "&table=" + tableFrom, true);
 					xmlhttp.send();
 				} 
 			}

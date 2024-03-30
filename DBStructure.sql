@@ -45,8 +45,8 @@ CREATE TABLE role(
 CREATE TABLE taskListCollab(
     ID INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     taskListID INT NOT NULL,
-    userID INT NOT NULL,
-    roleID INT NOT NULL
+    userID INT NOT NULL
+    -- roleID INT NOT NULL
 );
 
 

@@ -550,6 +550,20 @@ function evenUneven(stageID, taskID, numberExtra){ //toggle even value
 
     // change if uneven to even change weightings to reflect that
 }
+ // collab code
+function makeCollab(taskListID){
+    // set tasklist to collab in db
+    // display add Collaborators display
+}
+function showCollaborators(taskListID){
+    //hide tasks
+    //show Collaborators 
+}
+
+function showTasks(taskListID){
+    // show tasks
+    // hide Collaborators 
+}
 //event listerners
 
 
@@ -613,6 +627,7 @@ class TaskList{
     public $collab;
     public $priority;	
     public $ownerID;
+    public $collaborators =[];
     public $tasks = []; 
 
     public function __construct($vals, $con){
@@ -620,6 +635,16 @@ class TaskList{
         foreach($vals as $property => $val) {
             $this->$property = $val;
             //echo $val; //test
+        }
+        // setting the Collaborators
+        if($this->collab){
+            $qry = "SELECT user.ID, user.username FROM user LEFT JOIN tasklistcollab ON user.ID = tasklistcollab.userID WHERE tasklistcollab.taskListID = ?;"; 
+            $stmt = $con->prepare($qry);
+            $stmt->execute([$this->ID]);
+            $this->collaborators = $stmt->fetchAll(PDO::FETCH_ASSOC); 
+            var_dump($this->collaborators); //test
+            
+            
         }
        
 
@@ -691,6 +716,7 @@ foreach($taskLists as $row => $vals){
             foreach($taskLists as $taskList){
                 // echo "test1: ". $taskList->ID;
                 // echo "test2: ". var_dump($taskList);
+                //var_dump($taskList->collaborators);//test
         ?>
             
             <div id="<?php echo $taskList->ID; ?>Container" class="hidden">
@@ -701,9 +727,14 @@ foreach($taskLists as $row => $vals){
                 
                 <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo (isset($taskList->deadline))? $taskList->deadline : "none"  ?> </button>
                 <input type = "datetime-local" min = "<?php date("Y-m-d h:i:s")?>" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
-                <button class="button collabColour">Make Collab</button>
+                <?php if($taskList->collab):?>
+                    <button onclick="showCollaborators(<?php echo $taskList->ID; ?>)"class="button collabColour">Collaborators</button>
+                    <button onclick="showtasks(<?php echo $taskList->ID; ?>)"class="button hidden">Tasks</button>
+                <?php else:?>
+                    <button onclick="makeCollab(<?php echo $taskList->ID; ?>)"class="button collabColour">Make Collab</button>
+                <?php endif;?>
                 <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityVal($taskList->priority,$prioritiesName)." Priority"?></button>
-                <button onclick="useAJAXdelete(<?php echo $taskList->ID; ?>, 'tasklist')" class="button red">Delete</button>
+                <button onclick="useAJAXdelete(<?php echo $taskList->ID; ?>, 'tasklist', <?php echo $taskList->ownerID; ?>)" class="button red">Delete</button>
 
                 <?php
                 // ------------- tasks -------------
@@ -725,7 +756,7 @@ foreach($taskLists as $row => $vals){
                                 <button onclick="useAJAXdelete(<?php echo $task->ID;?>,'task')" class="clear button">X</button>
                             </div>
 
-                            <table class="taskTable">
+                            <table class="taskTable centreTable">
                                 <tr class="taskTr">
                                     <td class="taskTd tableDisplay">
                                         priority
@@ -829,11 +860,36 @@ foreach($taskLists as $row => $vals){
                                     <td class='clear'>
                                     </td>
                                 </tr>
-                                </div>
+                                <div id="task<?php echo $task->ID; ?>ErrorMsg" class = "red"></div>
                             </table>
-                            <div id="task<?php echo $task->ID; ?>ErrorMsg" class = "red"></div>
-
-             
+                        </div>
+                        <div id="collab<?php echo $task->ID; ?>" class="hidden">
+                            <h3>Add Collaborators: </h3>
+                            <form action="mainPage.php">
+                                <input type="number" id="collabCodeNCU" name="collabCodeNCU">
+                                <input class="button green" type="submit" id="submitNCU" name="submitNCU" value="+">
+                            </form>
+                            <h3>Collaborators: </h3>
+                            <table class="clear centreTable">
+                            <tr>
+                                <th class="clear textWhite">User</th>
+                                <th class="clear textWhite">Role</th>
+                                <th class="clear textWhite"></th>
+                            </tr>
+                            <?php foreach($taskList->collaborators as $collaborator): ?>
+                                <tr id="collabUser<?php echo $collaborator['ID'] ?>">
+                                    <td class='clear'>
+                                        <?php echo $collaborator["username"] ?>
+                                    </td>
+                                    <td class='clear'>
+                                        <?php echo ($taskList->ownerID == $collaborator["ID"])? "Owner" : "Collaborator" ?>
+                                    </td>
+                                    <td class='clear'>
+                                        <button onclick="useAJAXdelete(<?php echo $collaborator['ID'] ?>, 'tasklistcollab',<?php echo $taskList->ownerID?> )" class="button red">Remove</button>
+                                    </td>
+                                </tr>
+                            <?php endforeach?>
+                            </table>
                         </div>
                 <?php
                     }// taskList foreach close
