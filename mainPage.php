@@ -384,7 +384,7 @@ function changeWeighting(taskID, numberExtra=-1){
     var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
     console.log("weightingsToChange: "+ weightingsToChange); //test
     console.log("weightingsToChange num of : "+ weightingsToChange.length); //test
-    var numberOfStagesToConsider = Math.floor((weightingsToChange.length + numberExtra)/2) ;// to be used when a stage is uneven weighted to calculate the new evenWeighting of the rest of the stages// its divided by 2 as weightingsToChange.length 
+    var numberOfStagesToConsider = weightingsToChange.length + numberExtra ;// to be used when a stage is uneven weighted to calculate the new evenWeighting of the rest of the stages// its divided by 2 as weightingsToChange.length 
     var percentageLeft = 100.00; // to be used when a stage is unevenly weighted to calculate the new evenWeighting of the rest of the stages
 
     for(const weighting of weightingsToChange){ // first check if there is any uneven weighting this MUST be first  as percentageLeft and  numberOfStagesToConsider must be set before the even weitings are calculated    
@@ -393,9 +393,10 @@ function changeWeighting(taskID, numberExtra=-1){
         // var currentStageID = weighting.id.replace("weighting","").replace("Input","").replace("SG","")
         //console.log("currentStageID: "+currentStageID);
         //console.log("weightingsConsidered.includes(currentStageID)")
-        console.log("first Condition: "+ (typeEditing == "SG" && weighting.nodeName == "INPUT" && !weighting.classList.contains("ignore")));
-        console.log("seccond Condition: "+(weighting.classList.contains("unEven") && !weighting.classList.contains("ignore")) );
-        if ((typeEditing == "SG" && weighting.nodeName == "INPUT" && (!weighting.classList.contains("ignore") || !weighting.classList.contains("hidden")  )) || (weighting.classList.contains("unEven") && !weighting.classList.contains("ignore"))){
+        //console.log("first Condition: "+ (typeEditing == "SG" && weighting.nodeName == "INPUT" && !weighting.classList.contains("ignore")));//test
+        // console.log("seccond Condition: "+(weighting.classList.contains("unEven") && !weighting.classList.contains("ignore")) ); // test
+        // typeEditing == "SG" && weighting.nodeName == "INPUT" && (!weighting.classList.contains("ignore") || !weighting.classList.contains("hidden")  )) || (weighting.classList.contains("unEven") && !weighting.classList.contains("ignore"))
+        if (weighting.classList.contains("unEven")){
             //weightingsConsidered.push(currentStageID);
             if(weighting.nodeName == "INPUT"){
                 weightingVal = weighting.value.replace("%",""); //removing the % 
@@ -455,12 +456,14 @@ function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
     //getting current val
     var weightingTag = document.getElementById("weighting"+stageID+"SG");
     var evenButton = document.getElementById("evenButton"+stageID+"SG");
+    var weightingInput = document.getElementById("weightingInput"+stageID+"SG");
     var isEven;
     console.log("id used: weighting"+stageID+"SG")
     console.log("weightingTag: "+weightingTag);
     isUnEven = true;
     weightingTag.classList.replace("even","unEven");
-    weightingTag.classList.add("ignore");// for changechangeWeighting
+    weightingTag.innerHTML = weightingInput.value;
+    //weightingTag.classList.add("ignore");// for changechangeWeighting
     evenButton.innerHTML = "Uneven";
 
     changeWeighting(taskID,numberExtra); //change display
@@ -485,11 +488,12 @@ function addNewStage(taskID, hideOneStageDisplay=false){ // displays create fiel
     document.getElementById("newStageRow"+taskID+"PT2").classList.replace("hidden", "showing");
 
     //change weighting on stages existing stages
-    changeWeighting(taskID,1);
+    changeWeighting(taskID,0);
 }
 
 function cancelNewStage(taskID, stageCount){
     document.getElementById("newStageRow"+taskID).classList.replace("showing", "hidden");
+    document.getElementById("newStageRow"+taskID+"PT2").classList.replace("showing", "hidden");
     document.getElementById("weighting"+taskID+"NSG").classList.replace("unEven", "even"); // resetting value to even o it dosent interfear with changeWeighting calculations 
     console.log(stageCount); 
     if(Number(stageCount) == 1){
@@ -553,16 +557,49 @@ function evenUneven(stageID, taskID, numberExtra){ //toggle even value
  // collab code
 function makeCollab(taskListID){
     // set tasklist to collab in db
+    useAJAXedit({ID: Number(taskListID), collab: 1, table:"taskList"});
+    //addng user to taskListCollab table
+    useAJAXaddCollaborator(Number(taskListID), userID);
     // display add Collaborators display
+    document.getElementById("makeCollabButtonOf"+taskListID).classList.add("hidden");
+    showCollaborators(taskListID);
 }
 function showCollaborators(taskListID){
     //hide tasks
+    document.getElementById("tasksOf"+taskListID).classList.add("hidden");
+    document.getElementById("showCollaboratorsButtonOf"+taskListID).classList.add("hidden");
     //show Collaborators 
+    document.getElementById("collab"+taskListID).classList.remove("hidden");
+    document.getElementById("showTasksButtonOf"+taskListID).classList.remove("hidden");
 }
 
 function showTasks(taskListID){
     // show tasks
+    document.getElementById("tasksOf"+taskListID).classList.remove("hidden");
+    document.getElementById("showCollaboratorsButtonOf"+taskListID).classList.remove("hidden");
+    
     // hide Collaborators 
+    document.getElementById("collab"+taskListID).classList.add("hidden");
+    document.getElementById("showTasksButtonOf"+taskListID).classList.add("hidden");
+
+}
+function useAJAXaddCollaborator(taskListID, userID){
+    addGenralErrorMsg("adding Collaborator...", "green");
+    // upadating the DB
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        console.log("add responce: "+this.responseText)
+        clearGenralErrorMsg();
+        return this.responseText;
+    }else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
+        addGenralErrorMsg("operation failed; oops!", "red");
+    }
+    };
+
+    
+    xmlhttp.open("GET", "AJAXeditRow.php?taskListID="+taskListID+"&userID="+userID , true);
+    xmlhttp.send()
 }
 //event listerners
 
@@ -688,14 +725,14 @@ foreach($taskLists as $row => $vals){
 
 <body id>
     <?php navBar(false, basename($_SERVER["PHP_SELF"]) ); ?>
-    </div>
+    <!-- </div> -->
     <div id="main">
         <div class="tabs">
         <?php
             foreach($taskLists as $taskList){
                 
         ?>
-            <button onclick="changeTab('<?php echo $taskList->ID?>')" id="<?php echo $taskList->ID."Tab"?>" class="tab <?php echo($taskList->name == "Genral") ? "first" : "hidden";  ?>"><?php echo $taskList->name?></button>
+            <button onclick="changeTab('<?php echo $taskList->ID?>')" id="<?php echo $taskList->ID."Tab"?>" class="tab <?php echo($taskList->name == "Genral") ? "first" : "hidden";  ?> "><?php echo $taskList->name?></button>
             <?php if($taskList->name == "Genral") {
                 array_push($OpenTabs, $taskList->ID);
             }
@@ -727,17 +764,18 @@ foreach($taskLists as $row => $vals){
                 
                 <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo (isset($taskList->deadline))? $taskList->deadline : "none"  ?> </button>
                 <input type = "datetime-local" min = "<?php date("Y-m-d h:i:s")?>" id = "deadlineInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "deadlineInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('deadline' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->deadline; ?>"/>
-                <?php if($taskList->collab):?>
-                    <button onclick="showCollaborators(<?php echo $taskList->ID; ?>)"class="button collabColour">Collaborators</button>
-                    <button onclick="showtasks(<?php echo $taskList->ID; ?>)"class="button hidden">Tasks</button>
-                <?php else:?>
-                    <button onclick="makeCollab(<?php echo $taskList->ID; ?>)"class="button collabColour">Make Collab</button>
-                <?php endif;?>
+
+                <button onclick="showCollaborators(<?php echo $taskList->ID; ?>)" id="showCollaboratorsButtonOf<?php echo $taskList->ID; ?>" class="button collabColour <?php echo (!$taskList->collab)? "hidden":"";?>">Collaborators</button>
+                <button onclick="showTasks(<?php echo $taskList->ID; ?>)" id="showTasksButtonOf<?php echo $taskList->ID; ?>" class="button hidden">Tasks</button>
+                <button onclick="makeCollab(<?php echo $taskList->ID; ?>)" id="makeCollabButtonOf<?php echo $taskList->ID; ?>" class="button collabColour <?php echo ($taskList->collab)? "hidden":"";?>">Make Collab</button>
+
                 <button onclick="changePriority('<?php echo $taskList->ID; ?>priorityTL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'} )" class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>' id="<?php echo $taskList->ID; ?>priorityTL"><?php echo getPriorityVal($taskList->priority,$prioritiesName)." Priority"?></button>
                 <button onclick="useAJAXdelete(<?php echo $taskList->ID; ?>, 'tasklist', <?php echo $taskList->ownerID; ?>)" class="button red">Delete</button>
 
+                <!-- ------------- tasks ------------- -->
+                <div id="tasksOf<?php echo $taskList->ID; ?>">
                 <?php
-                // ------------- tasks -------------
+                
                 if(count($taskList->tasks) == 0){
                     echo "<br/>WOW such emptiness<br/> ";
                     echo"<button onclick='newTask()' class='button green'>New Task</button>";
@@ -808,7 +846,7 @@ foreach($taskLists as $row => $vals){
                                         </td>
                                         <td class='clear'>
                                             <button onclick="allowEdit('weighting', <?php echo $stage->ID;?>, 'SG')" id="weighting<?php echo $stage->ID?>SG" class="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?> button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->weighting?>%</button> 
-                                            <input onclick = "allowEdit('weighting' , <?php echo $stage->ID;?>,'SG')" onkeydown="changeWeightingToUnEven(<?php echo $task->ID. ', '.  $stage->ID;?>)" type = "text" id = "weightingInput<?php echo $stage->ID;?>SG" class ="weighting<?php echo $task->ID?>SG inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "weightingInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->weighting?>%"/>
+                                            <input onclick = "allowEdit('weighting' , <?php echo $stage->ID;?>,'SG')" onkeydown="changeWeightingToUnEven(<?php echo $task->ID. ', '.  $stage->ID;?>)" type = "text" id = "weightingInput<?php echo $stage->ID;?>SG" class =" inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "weightingInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->weighting?>%"/>
                                         </td>
                                         <td class='clear'>
                                             <button onclick="evenUneven(<?php echo $stage->ID?> , <?php echo $task->ID?>)" id="evenButton<?php echo $stage->ID?>SG" class="button"><?php echo ($stage->unEvenWeighting == 1 )? "Uneven" : "Even"?></button>
@@ -831,10 +869,10 @@ foreach($taskLists as $row => $vals){
                                         <input  id="name<?php echo $task->ID; ?>NSG" name ="name<?php echo $task->ID; ?>NSG" type="text" value="New Stage">
                                     </td>
                                     <td class='clear'>
-                                        <input onkeydown="changeWeightingToUnEven(<?php echo $task->ID; ?>,'<?php echo $task->ID; ?>N', 1 )" id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" class ="weighting<?php echo $task->ID?>SG even ignore" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
+                                        <input onkeydown="changeWeightingToUnEven(<?php echo $task->ID; ?>,'<?php echo $task->ID; ?>N', 0 )" id="weighting<?php echo $task->ID; ?>NSG" name ="weighting<?php echo $task->ID; ?>NSG" class ="weighting<?php echo $task->ID?>SG even ignore" type="text" value="<?php echo 100.00/(count($task->stages)+1)?>%">
                                     </td>
                                     <td class='clear'>
-                                        <button onclick="evenUneven('<?php echo $task->ID; ?>N' ,<?php echo $task->ID?>, 1 )" id="evenButton<?php echo $task->ID?>NSG" class="button">Even</button>
+                                        <button onclick="evenUneven('<?php echo $task->ID; ?>N' ,<?php echo $task->ID?>, 0 )" id="evenButton<?php echo $task->ID?>NSG" class="button">Even</button>
                                         <input type="hidden" id ="unEvenWeighting<?php echo $task->ID; ?>NSG" name="unEvenWeighting<?php echo $task->ID; ?>NSG" value="0">
                                     </td>
                                     <td class='clear'>
@@ -863,38 +901,42 @@ foreach($taskLists as $row => $vals){
                                 <div id="task<?php echo $task->ID; ?>ErrorMsg" class = "red"></div>
                             </table>
                         </div>
-                        <div id="collab<?php echo $task->ID; ?>" class="hidden">
-                            <h3>Add Collaborators: </h3>
-                            <form action="mainPage.php">
-                                <input type="number" id="collabCodeNCU" name="collabCodeNCU">
-                                <input class="button green" type="submit" id="submitNCU" name="submitNCU" value="+">
-                            </form>
-                            <h3>Collaborators: </h3>
-                            <table class="clear centreTable">
-                            <tr>
-                                <th class="clear textWhite">User</th>
-                                <th class="clear textWhite">Role</th>
-                                <th class="clear textWhite"></th>
-                            </tr>
-                            <?php foreach($taskList->collaborators as $collaborator): ?>
-                                <tr id="collabUser<?php echo $collaborator['ID'] ?>">
-                                    <td class='clear'>
-                                        <?php echo $collaborator["username"] ?>
-                                    </td>
-                                    <td class='clear'>
-                                        <?php echo ($taskList->ownerID == $collaborator["ID"])? "Owner" : "Collaborator" ?>
-                                    </td>
-                                    <td class='clear'>
-                                        <button onclick="useAJAXdelete(<?php echo $collaborator['ID'] ?>, 'tasklistcollab',<?php echo $taskList->ownerID?> )" class="button red">Remove</button>
-                                    </td>
-                                </tr>
-                            <?php endforeach?>
-                            </table>
-                        </div>
+                        
                 <?php
                     }// taskList foreach close
                 }// else statement close 
                 ?>
+                </div>
+                <div id="collab<?php echo $taskList->ID; ?>" class="hidden">
+                    <h3>Add Collaborators: </h3>
+                    <form action="mainPage.php">
+                        <input type="number" id="collabCodeNCU" name="collabCodeNCU">
+                        <input class="button green" type="submit" id="submitNCU" name="submitNCU" value="+">
+                    </form>
+                    <h3>Collaborators: </h3>
+                    <table class="clear centreTable">
+                    <tr>
+                        <th class="clear textWhite">User</th>
+                        <th class="clear textWhite">Role</th>
+                        <th class="clear textWhite"></th>
+                    </tr>
+                    <?php foreach($taskList->collaborators as $collaborator): ?>
+                        <tr id="collabUser<?php echo $collaborator['ID'] ?>">
+                            <td class='clear'>
+                                <?php echo $collaborator["username"] ?>
+                            </td>
+                            <td class='clear'>
+                                <?php echo ($taskList->ownerID == $collaborator["ID"])? "Owner" : "Collaborator" ?>
+                            </td>
+                            <td class='clear'>
+                                <button onclick="useAJAXdelete(<?php echo $collaborator['ID'] ?>, 'tasklistcollab',<?php echo $taskList->ownerID?> )" class="button red">Remove</button>
+                            </td>
+                        </tr>
+                    <?php endforeach?>
+                    </table>
+                    <button onclick="removeCollab(<?php echo $taskList->ID; ?>)" class="button red">Remove Collab</button>
+
+                </div>
             </div>
         <?php
         }// taskList foreach close
