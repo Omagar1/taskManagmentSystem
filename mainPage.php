@@ -4,9 +4,10 @@ session_start();
 require "functions.php";
 require_once "dbConnect.php";
 
-require("addRowProcess.php");
+require "addRowProcess.php";
 require "deleteRowProcess.php";
 require "editRowProcess.php";
+require "addCollaborator.php";
 ?>
 
 <!DOCTYPE html>
@@ -173,9 +174,31 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $result =  editRow($valsToValadate, "stage", $conn);
         unset($valsToValadate);
     }else{
-        var_dump($errors);//test
+        //var_dump($errors);//test
     }
 
+}elseif (isset($_POST["tokenNCU"]) And $_SESSION["tokenNCU"] == $_POST["tokenNCU"]) {
+    echo "NCU ran!";//test
+    try{
+        $_SESSION["currentDisplay"] = $_POST["taskListIDNCU"];
+
+        $qry = "SELECT ID FROM user WHERE collabCode = :collabCode ";
+        $stmt = $conn->prepare($qry);
+        $stmt->bindParam('collabCode', $_POST["collabCodeNCU"]);
+        $stmt->execute();
+        $userID = $stmt->fetch()["ID"];
+        $stmt->debugDumpParams(); //test
+        echo "userID: ". var_dump($userID);//test
+        echo "count: ".$stmt->rowCount();//test
+        if($stmt->rowCount() == 1){
+            addCollaborator($_POST["taskListIDNCU"], $userID, $conn); 
+        }else{
+            $errors["NCU"] = "Collab code does not Match with any users";
+        }
+        //$stmt->debugDumpParams(); //test
+    } catch(PDOException $e){
+        echo "Error : ".$e->getMessage();// dev error mesage
+    }
 }
 //generates a random tokens to be used to check that the Post is the first request going throuh valadation, hence why its after valadation
 $tokenNTL =  md5(uniqid(rand(), true)); // for new task lists
@@ -187,6 +210,8 @@ $tokenETK =  md5(uniqid(rand(), true)); // for editing tasks
 $tokenNSG =  md5(uniqid(rand(), true)); // for new stages 
 $tokenESG =  md5(uniqid(rand(), true)); // for editing stages
 
+$tokenNCU =  md5(uniqid(rand(), true)); // for new collab user 
+
 $_SESSION["tokenNTL"] = $tokenNTL; // for new task lists
 $_SESSION["tokenETL"] = $tokenETL; // for editing task lists
 
@@ -195,6 +220,8 @@ $_SESSION["tokenETK"] = $tokenETK; // for editing task
 
 $_SESSION["tokenNSG"] = $tokenNSG; // for new stages
 $_SESSION["tokenESG"] = $tokenESG; // for editing stages
+
+$_SESSION["tokenNCU"] = $tokenNCU; // for new collab user 
 
 
 
@@ -601,6 +628,9 @@ function useAJAXaddCollaborator(taskListID, userID){
     xmlhttp.open("GET", "AJAXaddCollaborator.php?taskListID="+taskListID+"&userID="+userID , true);
     xmlhttp.send()
 }
+function hideUser(IDtoHide){
+    document.getElementById("collabUser"+IDtoHide).classList.add("hidden");
+}
 //event listerners
 
 
@@ -679,7 +709,7 @@ class TaskList{
             $stmt = $con->prepare($qry);
             $stmt->execute([$this->ID]);
             $this->collaborators = $stmt->fetchAll(PDO::FETCH_ASSOC); 
-            var_dump($this->collaborators); //test
+            //var_dump($this->collaborators); //test
             
             
         }
@@ -709,9 +739,10 @@ class TaskList{
 
 // ---------------------------------------------------- getting data for display  -------------------------------------------------
 
-$qry = "SELECT ID, `name`, deadline, collab, `priority`, ownerID  FROM taskList WHERE ownerID = ?;"; 
+$qry = "SELECT ID, `name`, deadline, collab, `priority`, ownerID  FROM taskList WHERE ownerID = :userID OR ID IN (SELECT taskListID FROM taskListCollab WHERE userID = :userID);"; 
 $stmt = $conn->prepare($qry);
-$stmt->execute([$_SESSION["userID"]]);
+$stmt->bindParam('userID', $_SESSION["userID"]);
+$stmt->execute();
 $taskLists = $stmt->fetchAll(PDO::FETCH_ASSOC);
 //var_dump($taskLists); //test
 foreach($taskLists as $row => $vals){
@@ -909,10 +940,13 @@ foreach($taskLists as $row => $vals){
                 </div>
                 <div id="collab<?php echo $taskList->ID; ?>" class="hidden">
                     <h3>Add Collaborators: </h3>
-                    <form action="mainPage.php">
+                    <form action="mainPage.php" method="Post">
                         <input type="number" id="collabCodeNCU" name="collabCodeNCU">
+                        <input type="hidden" id="tokenNCU" name="tokenNCU" value="<?php echo $tokenNCU; ?>">
+                        <input type="hidden" id="taskListIDNCU" name="taskListIDNCU" value="<?php echo $taskList->ID; ?>">
                         <input class="button green" type="submit" id="submitNCU" name="submitNCU" value="+">
                     </form>
+                    <div id="NCUError"><b class="red"> <?php echo(isset($errors["NCU"]))? $errors["NCU"] :"";  ?></b></div>
                     <?php if (count($taskList->collaborators) > 1 ):?>
                         <h3>Collaborators: </h3>
                         <table class="clear centreTable">

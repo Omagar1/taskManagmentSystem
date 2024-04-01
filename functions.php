@@ -471,10 +471,15 @@ function whitchDBColumn($ColumnName){
 }
 
 function getNameFromID($ID,$con){
-	$qry = "SELECT `name` FROM user WHERE ID = ?"; 
-	$stmt = $con->prepare($qry);
-    $stmt->execute($ID);
-	return implode($stmt->fetch(PDO::FETCH_ASSOC));
+	try{
+		$qry = "SELECT `username` FROM user WHERE ID = ?"; 
+		$stmt = $con->prepare($qry);
+		$stmt->execute([$ID]);
+		return implode($stmt->fetch(PDO::FETCH_ASSOC));
+	} catch (PDOException $e) {
+		echo "Error : ".$e->getMessage();// dev error mesage
+		return "error";
+	}
 }
 
 function footer($pageName = "")
