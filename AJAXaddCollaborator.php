@@ -2,6 +2,6 @@
 // so i can use  deleteRowProcess for both AJAX and  AJAX  
 require "addCollaborator.php";
 require_once "dbConnect.php";
-deleteID($_GET["taskListID"], $_GET["userID"], $conn);
+addCollaborator(intval($_GET["taskListID"]), intval($_GET["userID"]), $conn);
 
 ?>

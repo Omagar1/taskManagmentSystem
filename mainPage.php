@@ -598,7 +598,7 @@ function useAJAXaddCollaborator(taskListID, userID){
     };
 
     
-    xmlhttp.open("GET", "AJAXeditRow.php?taskListID="+taskListID+"&userID="+userID , true);
+    xmlhttp.open("GET", "AJAXaddCollaborator.php?taskListID="+taskListID+"&userID="+userID , true);
     xmlhttp.send()
 }
 //event listerners
@@ -913,27 +913,31 @@ foreach($taskLists as $row => $vals){
                         <input type="number" id="collabCodeNCU" name="collabCodeNCU">
                         <input class="button green" type="submit" id="submitNCU" name="submitNCU" value="+">
                     </form>
-                    <h3>Collaborators: </h3>
-                    <table class="clear centreTable">
-                    <tr>
-                        <th class="clear textWhite">User</th>
-                        <th class="clear textWhite">Role</th>
-                        <th class="clear textWhite"></th>
-                    </tr>
-                    <?php foreach($taskList->collaborators as $collaborator): ?>
-                        <tr id="collabUser<?php echo $collaborator['ID'] ?>">
-                            <td class='clear'>
-                                <?php echo $collaborator["username"] ?>
-                            </td>
-                            <td class='clear'>
-                                <?php echo ($taskList->ownerID == $collaborator["ID"])? "Owner" : "Collaborator" ?>
-                            </td>
-                            <td class='clear'>
-                                <button onclick="useAJAXdelete(<?php echo $collaborator['ID'] ?>, 'tasklistcollab',<?php echo $taskList->ownerID?> )" class="button red">Remove</button>
-                            </td>
+                    <?php if (count($taskList->collaborators) > 1 ):?>
+                        <h3>Collaborators: </h3>
+                        <table class="clear centreTable">
+                        <tr>
+                            <th class="clear textWhite">User</th>
+                            <th class="clear textWhite">Role</th>
+                            <th class="clear textWhite"></th>
                         </tr>
-                    <?php endforeach?>
-                    </table>
+                        <?php foreach($taskList->collaborators as $collaborator): ?>
+                            <tr id="collabUser<?php echo $collaborator['ID'] ?>">
+                                <td class='clear'>
+                                    <?php echo $collaborator["username"] ?>
+                                </td>
+                                <td class='clear'>
+                                    <?php echo ($taskList->ownerID == $collaborator["ID"])? "Owner" : "Collaborator" ?>
+                                </td>
+                                <td class='clear'>
+                                    <button onclick="useAJAXdelete(<?php echo $collaborator['ID'] ?>, 'tasklistcollab',<?php echo $taskList->ownerID?> )" class="button red">Remove</button>
+                                </td>
+                            </tr>
+                        <?php endforeach?>
+                        </table>
+                    <?php else:?>
+                        <p>you dont have any collaborators yet</p>
+                    <?php endif;?>
                     <button onclick="removeCollab(<?php echo $taskList->ID; ?>)" class="button red">Remove Collab</button>
 
                 </div>
