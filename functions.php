@@ -203,9 +203,9 @@ function head($pageName, $extra = null){
 					allButtonTags[i].classList.remove("hidden");
 				}
 				//noNewRow(extra)
-				if (typeEditing =="SG"){
-					document.getElementById("weighting"+editedRowID+"SG").classList.remove("ignore");//removing the ignore 
-				}
+				// if (typeEditing =="SG"){
+				// 	document.getElementById("weighting"+editedRowID+"SG").classList.remove("ignore");//removing the ignore 
+				// }
 				hideSaveButton();
 				
 			}
