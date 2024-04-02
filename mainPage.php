@@ -199,6 +199,11 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     } catch(PDOException $e){
         echo "Error : ".$e->getMessage();// dev error mesage
     }
+}elseif(isset($_POST["tokenRC"]) And $_SESSION["tokenRC"] == $_POST["tokenRC"]){
+    deleteID($_POST["taskListIDRC"],"taskListCollab",$conn,"taskListID"); // remove all the users
+    $column["collab"] = false;
+    $column["ID"] = $_POST["taskListIDRC"] ;
+    editRow($column,"taskList",$conn);//removes changes to not collab any more
 }
 //generates a random tokens to be used to check that the Post is the first request going throuh valadation, hence why its after valadation
 $tokenNTL =  md5(uniqid(rand(), true)); // for new task lists
@@ -210,7 +215,8 @@ $tokenETK =  md5(uniqid(rand(), true)); // for editing tasks
 $tokenNSG =  md5(uniqid(rand(), true)); // for new stages 
 $tokenESG =  md5(uniqid(rand(), true)); // for editing stages
 
-$tokenNCU =  md5(uniqid(rand(), true)); // for new collab user 
+$tokenNCU =  md5(uniqid(rand(), true)); // for new collab user
+$tokenRC =  md5(uniqid(rand(), true)); // for romoving Collab on tasklists
 
 $_SESSION["tokenNTL"] = $tokenNTL; // for new task lists
 $_SESSION["tokenETL"] = $tokenETL; // for editing task lists
@@ -221,7 +227,8 @@ $_SESSION["tokenETK"] = $tokenETK; // for editing task
 $_SESSION["tokenNSG"] = $tokenNSG; // for new stages
 $_SESSION["tokenESG"] = $tokenESG; // for editing stages
 
-$_SESSION["tokenNCU"] = $tokenNCU; // for new collab user 
+$_SESSION["tokenNCU"] = $tokenNCU; // for new collab user
+$_SESSION["tokenRC"] = $tokenRC; // for romoving Collab on tasklists
 
 
 
@@ -368,18 +375,20 @@ function hideStage(stageID){
     document.getElementById("stage"+stageID).remove();
 }
 
-function completeStage(stageID, oneStageDisplayActive=false){
+function completeStage(stageID,){
     
 
     // getting data to send to db
     var dateTimeCompletedToSet;
-    var completeButton = document.getElementById("complete" + stageID + "SG")
-   
+    var completeButton = document.getElementById("complete" + stageID + "SG");
+    var completeButtonOSD = document.getElementById("complete" + stageID + "SG-OSD");
+
     if (completeButton.classList.contains("green")){ // get currentVal based off if element has the green class
         currentVal = true; 
         dateTimeCompletedToSet = null;
         //visual stuff
         completeButton.classList.remove("green");
+        completeButtonOSD.classList.remove("green");
         
     }else{
         currentVal = false;
@@ -387,6 +396,8 @@ function completeStage(stageID, oneStageDisplayActive=false){
         console.log("current Date Time: " + dateTimeCompletedToSet )// test
         //visual stuff
         completeButton.classList.add("green");
+        completeButtonOSD.classList.add("green");
+        
     }
     
     console.log("currentVal: " + currentVal); // test 
@@ -855,7 +866,7 @@ foreach($taskLists as $row => $vals){
                                 <div  id ="oneStageDisplay<?php echo $task->ID; ?>" class ="stageList">
                                     <p>Complete:</p>
                                     <button onclick="completeStage(<?php echo $task->stages[0]->ID?>)" id="complete<?php echo $task->stages[0]->ID?>SG-OSD" class="stageButton <?php echo ($task->stages[0]->complete == 1)?  "green": "" ?>">✓</button>
-                                    <button onclick="addNewStage(<?php echo $task->ID; ?>, true)" id="addNewStageButton<?php echo $task->ID; ?>OSD" class = "button green">Add New Stage</button>
+                                    <button onclick="addNewStage(<?php echo $task->ID; ?>, true)" id="addNewStageButton<?php echo $task->ID; ?>-OSD" class = "button green">Add New Stage</button>
                                 </div>
                             <?php endif;?>
                             <!-- two stages above -->
@@ -938,6 +949,7 @@ foreach($taskLists as $row => $vals){
                 }// else statement close 
                 ?>
                 </div>
+                <!-- collab display -->
                 <div id="collab<?php echo $taskList->ID; ?>" class="hidden">
                     <h3>Add Collaborators: </h3>
                     <form action="mainPage.php" method="Post">
@@ -972,8 +984,11 @@ foreach($taskLists as $row => $vals){
                     <?php else:?>
                         <p>you dont have any collaborators yet</p>
                     <?php endif;?>
-                    <button onclick="removeCollab(<?php echo $taskList->ID; ?>)" class="button red">Remove Collab</button>
-
+                    <form action="mainPage.php" method="post">
+                        <input type="hidden" name="tokenRC" value="<?php echo $tokenRC; ?>">
+                        <input type="hidden" name="taskListIDRC" value="<?php echo $taskList->ID; ?>">
+                        <input type="submit" class="button red" value="Remove Collab">
+                    </form>
                 </div>
             </div>
         <?php
@@ -1041,11 +1056,8 @@ foreach($taskLists as $row => $vals){
             <script> errorMsg(<?php if (isset($errorsT)){ echo json_encode($errorsT);} // need the json encode part ?>)  </script> 
             <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>
         </div>
-        <!-- collab display -->
+        
 
-        <div id="collabContainer" class = "hidden">
-                <!-- use ajax to get data  -->
-        </div>
         <!-- All task lists  -->
 
         <div id="allContainer" class="showing">
@@ -1079,7 +1091,7 @@ foreach($taskLists as $row => $vals){
         <?php
         //var_dump($OpenTabs);
         foreach($OpenTabs as $Tab){
-            echo "openTaskList('".$Tab."'); ";
+            echo "openTaskList('".$Tab."');";
         }
         ?>
         changeTab("<?php if (isset($_SESSION["currentDisplay"]) And $_SESSION["currentDisplay"]!="" ){ echo $_SESSION["currentDisplay"];}else{echo "all";} ?>")
