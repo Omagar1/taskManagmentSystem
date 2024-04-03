@@ -16,7 +16,7 @@ CREATE TABLE taskList(
     collab BOOLEAN NOT NULL DEFAULT false,
     `Priority` INT NOT NULL DEFAULT 2,
     ownerID INT NOT NULL,
-    FOREIGN KEY(ownerID) REFERENCES user(ID)
+    FOREIGN KEY(ownerID) REFERENCES user(ID) ON DELETE CASCADE
 );
 
 DROP  TABLE IF EXISTS task;
@@ -27,7 +27,7 @@ CREATE TABLE task(
     collab BOOLEAN NOT NULL DEFAULT false,
     `Priority` INT NOT NULL DEFAULT 2,
     taskListID INT NOT NULL,
-    FOREIGN KEY (taskListID) REFERENCES taskList(ID)
+    FOREIGN KEY (taskListID) REFERENCES taskList(ID) ON DELETE CASCADE
 );
 
 DROP  TABLE IF EXISTS stage;
@@ -35,11 +35,12 @@ CREATE TABLE stage(
     ID INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL, 
     weighting  DECIMAL(5,2),
+    unEvenWeighting BOOLEAN, 
     complete BOOLEAN NOT NULL DEFAULT false,
     dateTimeCompleted DATETIME,
     completedBy INT,
     taskID INT NOT NULL,
-    FOREIGN KEY (taskID) REFERENCES task(ID)
+    FOREIGN KEY (taskID) REFERENCES task(ID) ON DELETE CASCADE
 ); 
 
 

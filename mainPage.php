@@ -278,9 +278,10 @@ function closeTaskList(taskListID){
     taskListID = String(taskListID);
     //hide tasklist Tab
     
-    //console.log("tasklist ID: "+ taskListID);//test
+    console.log("tasklist ID: "+ taskListID);//test
     taskListTab = document.getElementById(taskListID + "Tab");
     taskListTab.classList.add("hidden");
+    console.log(taskListTab);//tets
     //change view
     changeTab("all"); 
     //change close tab button to open
@@ -549,8 +550,8 @@ function createNewStage(taskID){ // adds new stage to DB
     // create new Stage
     newStageVals = new Map();
     newStageVals.set("name", document.getElementById("name"+taskID+"NSG").value);
-    newStageVals.set("weighting", document.getElementById("weighting"+taskID+"NSG").value);
-    newStageVals.set("unEvenWeighting", document.getElementById("weighting"+taskID+"NSG").classList.contains("unEven") );
+    //newStageVals.set("weighting", document.getElementById("weighting"+taskID+"NSG").value);
+    //newStageVals.set("unEvenWeighting", document.getElementById("weighting"+taskID+"NSG").classList.contains("unEven") );
     newStageVals.set("taskID",taskID);
     newStageVals.set("tokenNSG",tokenNSG);
     post("mainPage.php", newStageVals);
@@ -1054,7 +1055,7 @@ foreach($taskLists as $row => $vals){
                 <input type="submit" name='submitNTK' id='submitNTK' class="green"value="Create!">
             </form>
             <script> errorMsg(<?php if (isset($errorsT)){ echo json_encode($errorsT);} // need the json encode part ?>)  </script> 
-            <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>
+            <button onclick="closeTaskList('newTask')" class="button red">cancel</button>
         </div>
         
 

@@ -224,8 +224,8 @@ function head($pageName, $extra = null){
 					//console.log(errors);// test 
 					for(const [key, value] of Object.entries(errors)){ //loop through key pair
 						var i = 0;
-						//console.log(i++);//test
-						//console.log(key);//test
+						console.log(i++);//test
+						console.log(key);//test
 						var inputTag =  document.getElementById(key);
 						var errorMsgTag = document.getElementById(key + "Error");
 						//inputTag.innerHTML = "test"; 
@@ -482,8 +482,7 @@ function getNameFromID($ID,$con){
 	}
 }
 
-function footer($pageName = "")
-{
+function footer($pageName = ""){
 	?>
 	<footer id="footer" class="bottom">
 		<div id="genralErrorMsg" class=""></div>
