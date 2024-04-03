@@ -138,7 +138,7 @@ $_SESSION["tokenEUR"] = $tokenEUR; // for new task lists
                 <h2> Mannage <?php echo $row["username"];?>'s Account</h2>
             </div>
 
-            <table class="taskTable">
+            <table class="taskTable centreTable">
                 <tr class="taskTr">
                     <td class="taskTd tableDisplay">Username: </td>
                     <td class="taskTd tableDisplay">

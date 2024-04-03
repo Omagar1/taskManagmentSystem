@@ -246,7 +246,8 @@ function head($pageName, $extra = null){
 				selectedTab[0].classList.remove("selected"); // [0] as getElementsByClassName returns a list of 1
 				// get tab clicked on, add selected class
 				var tabClicked = document.getElementById(tagToChangeTo + "Tab");
-				//console.log(tabClicked); //test 
+				console.log(tabClicked); //test 
+				console.log("tag: "+tagToChangeTo + "Tab")
 				tabClicked.classList.add("selected");
 				// change to relevent display
 					// get container without hidden add hidden class

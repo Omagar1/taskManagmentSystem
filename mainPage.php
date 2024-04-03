@@ -24,9 +24,10 @@ function getPriorityVal($PriorityVal, $priorities,){
     return $priorities[$PriorityVal-1];
 }
 
-
+unset($_SESSION["currentDisplay"]);
 // ---------------------------------------------------- task List Validation -------------------------------------------------
-$OpenTabs = [] ;// so reloading dosent close them
+$OpenTabs = [] ;// so reloading dose close them
+
 function nameInDB($nameToCheck,$con){ // change ?
       // qry to get existing usernames for valadation
       $qry = "SELECT `name` FROM tasklist WHERE `name` = ? AND ownerID = ?";
@@ -1083,7 +1084,7 @@ foreach($taskLists as $row => $vals){
                                 <button onclick='openTaskList("<?php echo $taskList->ID ?>")' id='openButton<?php echo $taskList->ID ?>' class='button green'>Open?</button>
                                 <button onclick='closeTaskList("<?php echo $taskList->ID ?>")' id='closeButton<?php echo $taskList->ID ?>' class='button red hidden'>Close?</button>
                             </td>
-                        </tr>";
+                        </tr>
                 <?php endforeach ?>
             </table>
         </div>
@@ -1092,10 +1093,10 @@ foreach($taskLists as $row => $vals){
         <?php
         //var_dump($OpenTabs);
         foreach($OpenTabs as $Tab){
-            echo "openTaskList('".$Tab."');";
+            echo "openTaskList('".$Tab."'); \n";
         }
         ?>
-        changeTab("<?php if (isset($_SESSION["currentDisplay"]) And $_SESSION["currentDisplay"]!="" ){ echo $_SESSION["currentDisplay"];}else{echo "all";} ?>")
+        changeTab("<?php if (isset($_SESSION["currentDisplay"]) And $_SESSION["currentDisplay"]!="" ){ echo $_SESSION["currentDisplay"];}else{echo "all";} ?>");
         // closing new task List tab if opended and new task list is created
         //
         // if(typeof changeWeightingsInDB_IDtoChange !== 'undefined' ){
