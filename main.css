@@ -757,6 +757,9 @@ input[type="reset"] {
     background-color: white;
     border-color: white;
   }
+  .tabs{
+    top:  -33px;
+  }
 }
 
 
@@ -804,8 +807,9 @@ input[type="reset"] {
     display: none;
   }
   .tabs{
-    top:  -35px;
+    top:  -33px;
   }
+  
 }
 
 
@@ -848,5 +852,8 @@ input[type="reset"] {
 
   #phoneDisplay {
     display: none;
+  }
+  .tabs{
+    top:  -33px;
   }
 }
