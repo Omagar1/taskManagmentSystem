@@ -196,10 +196,10 @@ body {
 .tabs{
   display: flex;
   position: relative;
-  top: -33px;
+  top:  -33px;
   margin-left: -10px;
-  
 }
+
 .tab{
   position: relative;
   margin-left: 0;
@@ -461,6 +461,10 @@ input[type="reset"] {
   background-color: #49be25
 }
 
+.amber{
+  background-color: rgb(219, 101, 4);
+}
+
 .darkBlue {
   background-color: var(--main);
 }
@@ -536,6 +540,7 @@ input[type="reset"] {
     min-height: 100%;
     height: auto;
     margin-bottom: 200px;
+    margin-top: 10%;
   }
 
   #mainLogin {
@@ -602,6 +607,12 @@ input[type="reset"] {
     color: black;
     background-color: white;
     border-color: white;
+  }
+  .hideWhenScreenSmall{
+    display: none;
+  }
+  .tabs{
+    top:  -25px;
   }
 }
 
@@ -686,7 +697,11 @@ input[type="reset"] {
     background-color: white;
     border-color: white;
   }
+  .tabs{
+    top:  -28px;
+  }
 }
+
 
 /* Medium devices (landscape tablets, 768px and up) */
 @media only screen and (min-width: 768px) {
@@ -744,6 +759,7 @@ input[type="reset"] {
   }
 }
 
+
 /* Large devices (laptops/desktops, 992px and up) */
 @media only screen and (min-width: 992px) {
 
@@ -787,7 +803,11 @@ input[type="reset"] {
   #phoneDisplay {
     display: none;
   }
+  .tabs{
+    top:  -35px;
+  }
 }
+
 
 /* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) {

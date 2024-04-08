@@ -24,9 +24,9 @@ function getPriorityVal($PriorityVal, $priorities,){
     return $priorities[$PriorityVal-1];
 }
 
-unset($_SESSION["currentDisplay"]);
+unset($_SESSION["currentDisplay"]);// so an unopened display is not set as the current display 
 // ---------------------------------------------------- task List Validation -------------------------------------------------
-$OpenTabs = [] ;// so reloading dose close them
+$OpenTabs = [] ;
 
 function nameInDB($nameToCheck,$con){ // change ?
       // qry to get existing usernames for valadation
@@ -41,7 +41,7 @@ function nameInDB($nameToCheck,$con){ // change ?
       }
 }
 
-var_dump($_POST);//test
+//var_dump($_POST);//test
 //echo $_SESSION["currentDisplay"]; //test 
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
 if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
@@ -312,38 +312,39 @@ function hideTask(IDtoHide){
 }
 
 function changePriority(elementIDToChange, updateData=null, ){
-    var priorityButton = document.getElementById(elementIDToChange)
+    var priorityButton = document.getElementById(elementIDToChange);
     // the state of updateData is used as a boolean to see if upadating the DB is wanted 
     console.log("updateDate: "+ updateData); //test
     console.log("typeof(updateData): "+ typeof(updateData));
 
-    if(typeof(updateData) != null){
+    if(typeof(updateData) == "object"){
         var currentPriorityIndex = prioritiesName.indexOf(priorityButton.innerHTML.replace(" Priority",""));
         //console.log(priorityButton.innerHTML.replace(" Priority",""))//test
     }else{
         var currentPriorityIndex = prioritiesName.indexOf(priorityButton.value);
     }
     
-    console.log(currentPriorityIndex);//test
+    console.log("currentPriorityIndex: "+currentPriorityIndex);//test
     //console.log(prioritiesName.length);//test
 
     if(currentPriorityIndex == (prioritiesName.length - 1 )){
-        var priorityIndexToGet = 0; 
+        var priorityIndexToGet = 0; // sending the queue back to the begining
     }else{
         var priorityIndexToGet = currentPriorityIndex + 1; 
     }
-    console.log(priorityIndexToGet);//test
+    console.log("priorityIndexToGet: "+priorityIndexToGet);//test
     console.log(prioritiesName[priorityIndexToGet]);//test
-    if(typeof(updateData) != null){
+    if(typeof(updateData) == "object"){
         priorityButton.innerHTML = prioritiesName[priorityIndexToGet] + " Priority";
         //db stuff
-        priorityIndexToGet++; 
-        var dataToDB = {ID: updateData["ID"], priority: priorityIndexToGet, table: updateData["table"]}; 
+        var dataToDB = {ID: updateData["ID"], priority: priorityIndexToGet+1, table: updateData["table"]}; 
         result = useAJAXedit(dataToDB);
     }else{
         priorityButton.value = prioritiesName[priorityIndexToGet];
     }
     // change style
+    console.log(prioritiesName);
+    console.log("priorityIndexToGet: "+ priorityIndexToGet);
     switch (priorityIndexToGet){
         case 0:
             priorityButton.classList.remove("green");
@@ -1011,7 +1012,7 @@ foreach($taskLists as $row => $vals){
                 <div id="deadlineNTLError"></div>
 
                 <div class="txtLeft"><label for="priorityNTL">Priority</label></div>
-                <input onclick="changePriority('priorityNTL')" type='text' name='priorityNTL' id='priorityNTL' class='button' value="<?php if(isset($valsToValadate["priorityNTL"])){echo $valsToValadate["priorityNTL"];}else{echo'medium';}?>"readonly>
+                <input onclick="changePriority('priorityNTL', false)" type='text' name='priorityNTL' id='priorityNTL' class='button' value="<?php if(isset($valsToValadate["priorityNTL"])){echo $valsToValadate["priorityNTL"];}else{echo'medium';}?>"readonly>
                 <div id="priorityNTLError"></div>
 
                 <input type="submit" name='submitNTL' id='submitNTL' class="green"value="Create!">
@@ -1050,7 +1051,7 @@ foreach($taskLists as $row => $vals){
                 <div id="deadlineNTKError"></div>
 
                 <div class="txtLeft"><label for="priorityNTK">Priority</label></div>
-                <input onclick="changePriority('priorityNTK')" type='text' name='priorityNTK' id='priorityNTK' class='button' value="<?php if(isset($valsToValadate["priorityNTK"])){echo $valsToValadate["priorityNTK"];}else{echo'medium';}?>"readonly>
+                <input onclick="changePriority('priorityNTK', false)" type='text' name='priorityNTK' id='priorityNTK' class='button' value="<?php if(isset($valsToValadate["priorityNTK"])){echo $valsToValadate["priorityNTK"];}else{echo'medium';}?>"readonly>
                 <div id="priorityNTKError"></div>
 
                 <input type="submit" name='submitNTK' id='submitNTK' class="green"value="Create!">
@@ -1066,8 +1067,8 @@ foreach($taskLists as $row => $vals){
             <table class = "tableDisplay">
                     <tr>
                         <th>Name</th>
-                        <th>Deadline</th>
-                        <th>Collab</th>
+                        <th class= "hideWhenScreenSmall">Deadline</th>
+                        <th class= "hideWhenScreenSmall">Collab</th>
                         <th>Priority</th>
                         <th>Owner</th>
                         <th></th>
@@ -1076,8 +1077,8 @@ foreach($taskLists as $row => $vals){
                 <?php foreach($taskLists as $taskList): ?> 
                         <tr id='allRow<?php echo $taskList->ID;?>'> 
                             <td><?php echo $taskList->name ?></td>
-                            <td><?php echo yesOrNo($taskList->deadline) ?></td>
-                            <td><?php echo yesOrNo($taskList->collab) ?></td>
+                            <td class= "hideWhenScreenSmall"><?php echo yesOrNo($taskList->deadline) ?></td>
+                            <td class= "hideWhenScreenSmall"><?php echo yesOrNo($taskList->collab) ?></td>
                             <td><button onclick="changePriority('priority<?php echo $taskList->ID ?>ATL',{ID: '<?php echo $taskList->ID; ?>',table: 'tasklist'})"  id='priority<?php echo $taskList->ID ?>ATL' class='button <?php echo getPriorityVal($taskList->priority, $prioritiesColour) ?>'><?php echo getPriorityVal($taskList->priority, $prioritiesName)  ?> Priority</td>
                             <td><?php echo ($taskList->ownerID == $_SESSION["userID"])? "you" : getNameFromID($taskList->ownerID,$conn) ?></td>
                             <td>
