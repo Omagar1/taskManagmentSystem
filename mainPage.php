@@ -51,12 +51,15 @@ function getTaskListID($elementID, $type, $con){
             $qry = "SELECT taskListID FROM task WHERE ID = ?";
             $stmt = $con->prepare($qry);
             $stmt->execute([$elementID]);
-            return implode($stmt->fetch(PDO::FETCH_ASSOC));
+            $ID = implode($stmt->fetch(PDO::FETCH_ASSOC));
+            var_dump($ID);
+            //echo "Id found: ". $ID ; //test
+            return $ID;
         }elseif ($type == "stage"){
             $qry = "SELECT taskID FROM stage WHERE ID = ?";
             $stmt = $con->prepare($qry);
             $stmt->execute([$elementID]);
-            getTaskListID(implode($stmt->fetch(PDO::FETCH_ASSOC)),"task",$con);
+            return getTaskListID(implode($stmt->fetch(PDO::FETCH_ASSOC)),"task",$con);
         }
     } catch (PDOException $e) {
         echo "Error : ".$e->getMessage();// dev error mesage
@@ -101,6 +104,18 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $taskListID = getTaskListID($valsToValadate["ID"], "task", $conn);
         array_push($OpenTabs,$taskListID);
         $_SESSION["currentDisplay"] = $taskListID;
+    }elseif(isset($_POST["tokenESG"])){
+        $endtag = "ESG";
+        $taskListID = getTaskListID($valsToValadate["ID"], "stage", $conn);
+        echo "taskListID: ". $taskListID; //test
+        array_push($OpenTabs,$taskListID);
+        $_SESSION["currentDisplay"] = $taskListID;
+    }elseif(isset($_POST["tokenNSG"])){
+        $endtag = "NSG";
+        $taskListID = getTaskListID($valsToValadate["taskID"], "task", $conn);
+        array_push($OpenTabs,$taskListID);
+        $_SESSION["currentDisplay"] = $taskListID;
+        $valsToValadate["ID"] = $valsToValadate["taskID"];// for error msg 
     }
     
     
@@ -141,6 +156,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     // valadation passsed
     //removing the defult value of dedline as it should be stored as null
     //var_dump($valsToValadate["deadline"]);//test
+    unset($valsToValadate["token"]);
     if(isset($valsToValadate["deadline"]) And ($valsToValadate["deadline"] == "0000-00-00 00:00:00" Or $valsToValadate["deadline"] == "" )){
         $valsToValadate["deadline"] = null;// must be set as so you can remove a deadline
     } 
@@ -149,7 +165,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         $valsToValadate["ownerID"] = $_SESSION["userID"];
         unset($valsToValadate["submit"]);
-        unset($valsToValadate["token"]); 
+         
         //var_dump($valsToValadate); //test
         $newTaskListID = addRow($valsToValadate, "tasklist", $conn);
         // so the new taskList is opened 
@@ -163,7 +179,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         //var_dump( $OpenTabs);
     }elseif(empty($errors) And isset($_POST["tokenETL"])){ // edit Task List 
         unset($valsToValadate["submit"]);
-        unset($valsToValadate["token"]);
+        
         editRow($valsToValadate, "tasklist", $conn);
         
         $_SESSION["currentDisplay"] = $valsToValadate["ID"];
@@ -173,7 +189,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         echo "new task Ran";// test
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         unset($valsToValadate["submit"]);
-        unset($valsToValadate["token"]);
+        
 
         addRow($valsToValadate, "task", $conn);
         // sets the current display to the task list the new task is in 
@@ -187,7 +203,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     }elseif(empty($errors) And isset($_POST["tokenETK"])){ //editing task
         echo "edit tasks Ran";// test
         unset($valsToValadate["submit"]);
-        unset($valsToValadate["token"]);
+        
         editRow($valsToValadate, "task", $conn);
         
         //$_SESSION["currentDisplay"] = $result["tasklistID"];
@@ -195,12 +211,12 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         unset($valsToValadate);
     }elseif(empty($errors) And isset($_POST["tokenNSG"])){
         echo "new stage Ran";// test
-        unset($valsToValadate["tokenNSG"]);
+        unset($valsToValadate["ID"]);
         $result = addRow($valsToValadate, "stage", $conn);
         unset($valsToValadate);
     }elseif(empty($errors) And isset($_POST["tokenESG"])){
         echo "edit stage Ran";// test
-        unset($valsToValadate["tokenESG"]);
+        
         $result =  editRow($valsToValadate, "stage", $conn);
         unset($valsToValadate);
     }else{
@@ -862,7 +878,7 @@ foreach($taskLists as $row => $vals){
                             <div class="taskHeader">
                                 <h2 class="editButtons editButtonsID<?php echo $task->ID;?>TK"><?php echo $task->name;?></h2>
                                 <input  onclick = "allowEdit('name' , <?php echo $task->ID;?>,'TK')" type = "text" id = "nameInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $task->ID;?>TK" name = "nameInput<?php echo $task->ID;?>TK"  value = "<?php echo $task->name; ?>"/>
-                                <div id="nameTKError"></div>
+                                
 
                                 <button onclick = "allowEdit('name' , <?php echo $task->ID;?>,'TK')"  class="clear button" >edit</button>
                                 <!-- <button  class="clear">MakeRepeat</button> -->
@@ -876,7 +892,7 @@ foreach($taskLists as $row => $vals){
                                     </td>
                                     <td class="taskTd tableDisplay">
                                         <button onclick="changePriority('<?php echo $task->ID; ?>priorityTL',{ID: '<?php echo $task->ID; ?>',table: 'task'} )" class='button <?php echo getPriorityVal($task->priority, $prioritiesColour) ?>' id="<?php echo $task->ID; ?>priorityTL"><?php echo getPriorityVal($task->priority,$prioritiesName)." Priority"?></button>
-                                        <div id="priorityTKError"></div>
+                                    
 
                                     </td>
                                 </tr>
@@ -887,7 +903,7 @@ foreach($taskLists as $row => $vals){
                                     <td class="taskTd tableDisplay">
                                         <p class="editButtons editButtonsID<?php echo $task->ID;?>TK"><?php echo $task->deadline;?></p>
                                         <input onclick = "allowEdit('deadline' , <?php echo $task->ID;?>,'TK')" type = "text" id = "deadlineInput<?php echo $task->ID;?>TK" class =" inputbutton hidden editInputs editInputsID<?php echo $task->ID;?>TK" name = "deadlineInput<?php echo $task->ID;?>TK"  value = "<?php echo $task->deadline; ?>"/>
-                                        <div id="deadlineTKError"></div>
+                                        
 
                                     </td>
                                 </tr>
@@ -918,6 +934,7 @@ foreach($taskLists as $row => $vals){
                                         <td class='clear'>
                                             <button onclick="allowEdit('name', <?php echo $stage->ID;?>, 'SG')" class="button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->name?></button>
                                             <input onclick = "allowEdit('name' , <?php echo $stage->ID;?>,'SG')" type = "text" id = "nameInput<?php echo $stage->ID;?>SG" class =" inputbutton hidden editInputs editInputsID<?php echo $stage->ID;?>SG" name = "nameInput<?php echo $stage->ID;?>SG"  value = "<?php echo $stage->name; ?>"/>
+                                            
                                         </td>
                                         <!-- <td class='clear'>
                                             <button onclick="allowEdit('weighting', <?php echo $stage->ID;?>, 'SG')" id="weighting<?php echo $stage->ID?>SG" class="weighting<?php echo $task->ID?>SG <?php echo ($stage->unEvenWeighting == 1 )? "unEven" : "even"?> button clear editButtons editButtonsID<?php echo $stage->ID;?>SG"><?php echo $stage->weighting?>%</button> 
@@ -935,6 +952,7 @@ foreach($taskLists as $row => $vals){
                                             <?php endif?>
                                         </td>
                                     </tr>
+
                                 <?php endforeach ?>
                                 <!-- new stage Row  -->
                                 
@@ -975,6 +993,17 @@ foreach($taskLists as $row => $vals){
                                 </tr>
                                 
                             </table>
+                            <div id="stagesOfTask<?php echo $task->ID; ?>ErrorMsg">
+                                <?php foreach($task->stages as $stage):?>
+                                    <div id="nameESG<?php echo $stage->ID; ?>Error"></div>
+                                    <div id="weighitingESG<?php echo $stage->ID; ?>Error"></div>
+                                <?php endforeach ?>
+                            </div>
+                            <div id="newStageOfTask<?php echo $task->ID; ?>ErrorMsg">
+                                <div id="nameNSG<?php echo $task->ID; ?>Error"></div>
+                                <div id="weighitingNSG<?php echo $task->ID; ?>Error"></div>
+                            </div>
+
                             <div id="task<?php echo $task->ID; ?>ErrorMsg">
                                 <div id="nameETK<?php echo $task->ID; ?>Error"></div>
                                 <div id="deadlineETK<?php echo $task->ID; ?>Error"></div>
@@ -1126,6 +1155,7 @@ foreach($taskLists as $row => $vals){
         <script>
         <?php
         //var_dump($OpenTabs);
+        array_unique($OpenTabs);
         foreach($OpenTabs as $Tab){
             echo "openTaskList('".$Tab."'); \n";
         }

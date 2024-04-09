@@ -269,7 +269,7 @@ function head($pageName, $extra = null){
 				// Shifts tabs over so they work for css 
 				console.log(newTabID + " shift tab Ran");//test
 				var newTab = document.getElementById(newTabID + "Tab");
-				//console.log(newTab);//test
+				console.log(newTab);//test
 				var leftShift = -(tabsOpen * 20);
 				newTab.style.left  = leftShift + "px";
 				newTab.style.zIndex = (maxTabsOpen - tabsOpen);
