@@ -63,6 +63,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $endtag = "NTL";
         array_push($OpenTabs,"newTaskList");
         $_SESSION["currentDisplay"] = "newTaskList";
+        $valsToValadate["ID"] = "";
     }elseif(isset($_POST["tokenETL"])){
         array_push($OpenTabs, $valsToValadate["ID"]);
         $_SESSION["currentDisplay"] = $valsToValadate["ID"];
@@ -71,6 +72,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $endtag = "NTK";
         array_push($OpenTabs,"newTask");
         $_SESSION["currentDisplay"] = "newTask";
+        $valsToValadate["ID"] = "";
     }elseif(isset($_POST["tokenETK"])){
         $endtag = "ETK";
         array_push($OpenTabs,"newTask");
@@ -85,7 +87,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $valsToValadate[$column] = $valToCheck;
 
         //echo $column." ";//test
-        if($valToCheck == "" And $column != "deadline" ){ 
+        if($valToCheck == "" And $column != "deadline" And $column != "ID"){ 
             $msg = ucfirst($column)." Must Not Be Empty";
             $errors[$column.$endtag.$valsToValadate["ID"]] = $msg;
             var_dump($errors); 
@@ -1021,7 +1023,6 @@ foreach($taskLists as $row => $vals){
 
                 <input type="submit" name='submitNTL' id='submitNTL' class="green"value="Create!">
             </form>
-            <script> errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)  </script> 
             <button onclick="closeTaskList('newTaskList')" class="button red">cancel</button>
         </div>
 
@@ -1060,7 +1061,7 @@ foreach($taskLists as $row => $vals){
 
                 <input type="submit" name='submitNTK' id='submitNTK' class="green"value="Create!">
             </form>
-            <script> errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)  </script> 
+            
             <button onclick="closeTaskList('newTask')" class="button red">cancel</button>
         </div>
         
@@ -1107,7 +1108,7 @@ foreach($taskLists as $row => $vals){
         // if(typeof changeWeightingsInDB_IDtoChange !== 'undefined' ){
         //     //changeWeightingsInDB(changeWeightingsInDB_IDtoChange, true );
         // }
-
+        errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)
         </script>
              
     </div>
