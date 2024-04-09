@@ -29,16 +29,39 @@ unset($_SESSION["currentDisplay"]);// so an unopened display is not set as the c
 $OpenTabs = [] ;
 
 function nameInDB($nameToCheck,$con){ // change ?
-      // qry to get existing usernames for valadation
-      $qry = "SELECT `name` FROM tasklist WHERE `name` = ? AND ownerID = ?";
-      $stmt = $con->prepare($qry);
-      $stmt->execute([$nameToCheck,$_SESSION["userID"]]);
-      $count = $stmt->rowCount(); 
-      if ($count == 0){
-        return false;
-      }else{
-        return true;
-      }
+    try{
+        // qry to get existing usernames for valadation
+        $qry = "SELECT `name` FROM tasklist WHERE `name` = ? AND ownerID = ?";
+        $stmt = $con->prepare($qry);
+        $stmt->execute([$nameToCheck,$_SESSION["userID"]]);
+        $count = $stmt->rowCount(); 
+        if ($count == 0){
+            return false;
+        }else{
+            return true;
+        }
+    } catch (PDOException $e) {
+        echo "Error : ".$e->getMessage();// dev error mesage
+        return "error";
+    }
+}
+function getTaskListID($elementID, $type, $con){
+    try{
+        if ($type == "task" ){
+            $qry = "SELECT taskListID FROM task WHERE ID = ?";
+            $stmt = $con->prepare($qry);
+            $stmt->execute([$elementID]);
+            return implode($stmt->fetch(PDO::FETCH_ASSOC));
+        }elseif ($type == "stage"){
+            $qry = "SELECT taskID FROM stage WHERE ID = ?";
+            $stmt = $con->prepare($qry);
+            $stmt->execute([$elementID]);
+            getTaskListID(implode($stmt->fetch(PDO::FETCH_ASSOC)),"task",$con);
+        }
+    } catch (PDOException $e) {
+        echo "Error : ".$e->getMessage();// dev error mesage
+        return "error";
+    }
 }
 
 var_dump($_POST);//test
@@ -75,8 +98,9 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $valsToValadate["ID"] = "";
     }elseif(isset($_POST["tokenETK"])){
         $endtag = "ETK";
-        array_push($OpenTabs,"newTask");
-        $_SESSION["currentDisplay"] = "newTask";
+        $taskListID = getTaskListID($valsToValadate["ID"], "task", $conn);
+        array_push($OpenTabs,$taskListID);
+        $_SESSION["currentDisplay"] = $taskListID;
     }
     
     
@@ -949,8 +973,12 @@ foreach($taskLists as $row => $vals){
                                     <td class='clear'>
                                     </td>
                                 </tr>
-                                <div id="task<?php echo $task->ID; ?>ErrorMsg" class = "red"></div>
+                                
                             </table>
+                            <div id="task<?php echo $task->ID; ?>ErrorMsg">
+                                <div id="nameETK<?php echo $task->ID; ?>Error"></div>
+                                <div id="deadlineETK<?php echo $task->ID; ?>Error"></div>
+                            </div>
                         </div>
                         
                 <?php
