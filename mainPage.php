@@ -1053,7 +1053,7 @@ foreach($taskLists as $row => $vals){
                     <form action="mainPage.php" method="post">
                         <input type="hidden" name="tokenRC" value="<?php echo $tokenRC; ?>">
                         <input type="hidden" name="taskListIDRC" value="<?php echo $taskList->ID; ?>">
-                        <input type="submit" class="button red" value="Remove Collab">
+                        <input type="submit" class="button red textWhite" value="Remove Collab">
                     </form>
                 </div>
             </div>
@@ -1155,7 +1155,8 @@ foreach($taskLists as $row => $vals){
         <script>
         <?php
         //var_dump($OpenTabs);
-        array_unique($OpenTabs);
+        $OpenTabs = array_unique($OpenTabs);
+        //var_dump($OpenTabs);
         foreach($OpenTabs as $Tab){
             echo "openTaskList('".$Tab."'); \n";
         }

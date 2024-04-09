@@ -20,6 +20,18 @@ head($pageName); // from functions.php, echoes out the head tags
 <?php
 $errorsL = []; // id then msg as key pair
 $errorsSU = []; // id then msg as key pair
+function isInArray($searchFor, $inArr){
+    foreach($inArr as $val){
+        //test
+        // echo"val: ";
+        // var_dump($val);
+        // echo "\n";
+        if(implode($val) == $searchFor){
+            return true;
+        }
+    }
+    return false;
+}
 // ---------------------------------------------------- logIn Validation -------------------------------------------------
 if (isset($_POST['submitL'])) {
     
@@ -61,17 +73,19 @@ if (isset($_POST['submitL'])) {
     $qry = "SELECT username FROM user";
     $stmt = $conn->prepare($qry);
     $stmt->execute();
-    $existingUsernames = $stmt->fetch(PDO::FETCH_BOTH);
+    $existingUsernames = $stmt->fetchAll(PDO::FETCH_ASSOC);
     if ($existingUsernames == null){
         $existingUsernames = []; 
     }
-
+    var_dump($existingUsernames); 
+    echo "does Bob exixst: ";
+    var_dump(isInArray("Bob", $existingUsernames));
     // ---------- Username valadtaion ----------
     if ($unameSU == "") {
         $msg = "Username Must Not be Empty";
         $errorsSU["UnameSU"] = $msg;
         $valadationPassed = false;
-    }elseif (in_array($unameSU, $existingUsernames)){
+    }elseif (isInArray($unameSU, $existingUsernames)){
         $msg = "Username Already Exists ";
         $errorsSU["UnameSU"] = $msg;
         $valadationPassed = false;
