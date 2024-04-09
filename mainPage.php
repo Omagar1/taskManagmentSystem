@@ -41,7 +41,7 @@ function nameInDB($nameToCheck,$con){ // change ?
       }
 }
 
-//var_dump($_POST);//test
+var_dump($_POST);//test
 //echo $_SESSION["currentDisplay"]; //test 
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
 if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
@@ -64,7 +64,9 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         array_push($OpenTabs,"newTaskList");
         $_SESSION["currentDisplay"] = "newTaskList";
     }elseif(isset($_POST["tokenETL"])){
-        $endtag = "";
+        array_push($OpenTabs, $valsToValadate["ID"]);
+        $_SESSION["currentDisplay"] = $valsToValadate["ID"];
+        $endtag = "ETL";
     }elseif(isset($_POST["tokenNTK"])){
         $endtag = "NTK";
         array_push($OpenTabs,"newTask");
@@ -84,8 +86,9 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
 
         //echo $column." ";//test
         if($valToCheck == "" And $column != "deadline" ){ 
-            $msg = $column." Must Not Be Empty";
-            $errors[$column] = $msg; 
+            $msg = ucfirst($column)." Must Not Be Empty";
+            $errors[$column.$endtag.$valsToValadate["ID"]] = $msg;
+            var_dump($errors); 
         }elseif($column == "name"){
             if(nameInDB($valToCheck,$conn)){
                 $msg = $valToCheck."Task List Already exists";
@@ -133,8 +136,8 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         unset($_POST);
         //var_dump( $OpenTabs);
     }elseif(empty($errors) And isset($_POST["tokenETL"])){ // edit Task List 
-        unset($valsToValadate["submitETL"]);
-        unset($valsToValadate["tokenETL"]);
+        unset($valsToValadate["submit"]);
+        unset($valsToValadate["token"]);
         editRow($valsToValadate, "tasklist", $conn);
         
         $_SESSION["currentDisplay"] = $valsToValadate["ID"];
@@ -805,6 +808,7 @@ foreach($taskLists as $row => $vals){
                 <div class = "taskListHeader">
                     <h2 onclick = "allowEdit('name' , <?php echo $taskList->ID;?>, 'TL')" class="editButtons editButtonsID<?php echo $taskList->ID;?>TL"><?php echo $taskList->name; ?></h2>
                     <input type = "text" id = "nameInput<?php echo $taskList->ID;?>TL" class =" inputbutton hidden editInputs editInputsID<?php echo $taskList->ID;?>TL" name = "nameInput<?php echo $taskList->ID;?>TL"  onclick = "allowEdit('name' , <?php echo $taskList->ID;?>,'TL')" value = "<?php echo $taskList->name; ?>"/>
+                    <div id="nameETL<?php echo $taskList->ID;?>Error"></div>
                 </div>
                 
                 <button class="button editButtons editButtonsID<?php echo $taskList->ID;?>TL" onclick = "allowEdit('deadline' , <?php echo $taskList->ID; ?>,'TL')">Deadline: <?php echo (isset($taskList->deadline))? $taskList->deadline : "none"  ?> </button>
@@ -1056,7 +1060,7 @@ foreach($taskLists as $row => $vals){
 
                 <input type="submit" name='submitNTK' id='submitNTK' class="green"value="Create!">
             </form>
-            <script> errorMsg(<?php if (isset($errorsT)){ echo json_encode($errorsT);} // need the json encode part ?>)  </script> 
+            <script> errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)  </script> 
             <button onclick="closeTaskList('newTask')" class="button red">cancel</button>
         </div>
         

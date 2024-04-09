@@ -91,7 +91,7 @@ function head($pageName, $extra = null){
 			function allowEdit(columnName, IDToChange, extra = ""){
 				//console.log("I RAN")// test
 				
-				cancel(extra) // hiding all input elements - dosent matter that it hides the buuttons as this function shows them again 
+				cancel(extra) // hiding all input elements so that only the one reccord is edited at a time
 				// getting the elements to edit
 				editTag = "ID" + IDToChange + extra;
 				console.log("editInputs" + editTag);//test
@@ -221,7 +221,7 @@ function head($pageName, $extra = null){
 
 			function errorMsg(errors){
 				if(typeof(errors) !== 'undefined' ){
-					//console.log(errors);// test 
+					console.log(errors);// test 
 					for(const [key, value] of Object.entries(errors)){ //loop through key pair
 						var i = 0;
 						console.log(i++);//test
@@ -231,7 +231,10 @@ function head($pageName, $extra = null){
 						//inputTag.innerHTML = "test"; 
 						console.log(inputTag);//test
 						console.log(errorMsgTag);//test
-						inputTag.classList.add("errorInput");
+						console.log(typeof(inputTag))//test
+						if(inputTag != null){ // not all errors will have an input tag to change display of
+							inputTag.classList.add("errorInput");
+						}
 						errorMsgTag.innerHTML = "<p id = 'msg'><b class = 'error'>" + value + "</b></p>";
 						//console.log(errorMsgTag);//test
 					}
