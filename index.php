@@ -190,12 +190,17 @@ if (isset($_POST['submitL'])) {
 
          <!-- About Us   --> 
         <div id="aboutUsContainer" class="hidden">
+            <h2>TaskMaster Pro</h2>
             <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. 
-                Quis aperiam unde ex ipsum corporis, doloribus, velit enim culpa explicabo vero,
-                amet assumenda voluptatem pariatur dolorem quae repudiandae quisquam. Maiores, 
-                inventore.
+            <b>Elevate your productivity</b> with TaskMaster Pro, the ultimate web application for task management. 
+            Not only can you <b>organize tasks into TaskLists and break them down into stages</b>, but you can also <b>collaborate in real-time</b> with colleagues or friends. 
+            Invite others to join your TaskList using a unique <b>Collab Code</b>, and watch as teamwork transforms your project planning. 
+            Whether you’re delegating tasks, sharing updates, or tracking progress, TaskMaster Pro’s <b>cloud-based</b> platform ensures that everyone’s contributions are synchronized across all devices. 
+            With TaskMaster Pro, teamwork is just a few clicks away, making it the perfect tool for collective efficiency and enhanced productivity.
             </p>
+            <button onclick="changeTab('signUp')"  id="SignUpNowButton" class="button green">Sign Up Now!</button>
+            <p> *Decription Provided by MS Copilot AI assistant. </p>
+            <p> *Cloud-based is assuming the system is setup on a server as intended instead of in local host it has been for development.</p>
         </div>
         
         <script>changeTab("<?php if (isset($currentDisplay)){ echo $currentDisplay;}else{echo "logIn";} ?>")</script>

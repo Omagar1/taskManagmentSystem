@@ -6,14 +6,14 @@ function head($pageName, $extra = null){
 	?>
 	
 	<head>
-		<title>Task Managment System</title>
+		<title>TaskMaster Pro</title>
 		<!-- Stylesheet Stuff -->
 		<link href="/taskManagmentSystem/main.css" rel="stylesheet" />
 		<?php echo $extra; ?>
 		<!-- Fonts -->
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<!-- Meta stuff -->
-		<meta name="description" content="Task Managment System">
+		<meta name="description" content="TaskMaster Pro">
   		<meta name="keywords" content="Task Management, personal, business,">
   		<meta name="author" content="Josiah Rowden">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -309,7 +309,7 @@ function head($pageName, $extra = null){
 				}
 				editDataString = editDataString.slice(0, -1); // removeing last & so no errors
 				
-				//console.log("editDataString: " + editDataString) //test
+				//console.log("editDataString: " + editDataString) //
 				// upadating the DB
 				var xmlhttp = new XMLHttpRequest();
 				xmlhttp.onreadystatechange = function() {
@@ -390,7 +390,7 @@ function navBar($displaybuttons,$currentPageName = null){
             <img class="logoImage" src = "./imagesTMS/logoNoBG.png" alt = "Logo"/>
 		    
             <?php if (isset($_SESSION["loggedIn"])): ?>
-				<div></div><!--  prints empty div to centre title -->
+				<div></div><!--  prints empty div to centre h1 tag -->
 				<h1>Welcome <?php echo $_SESSION['username'];?></h1>
 				<a href='LOProcess.php' class = 'button'>Log Out</a>
 				<?php if($currentPageName == "settings.php"):?>
@@ -402,8 +402,8 @@ function navBar($displaybuttons,$currentPageName = null){
 				
 			<?php else:?>
 
-				<h1>Task Managment System</h1>
-				<div></div><!--  prints empty div to centre title -->
+				<h1>TaskMaster Pro</h1>
+				<div></div><!--  prints empty div to centre h1 tag -->
 				
 			<?php endif?>
             
