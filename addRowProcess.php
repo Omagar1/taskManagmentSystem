@@ -52,7 +52,7 @@ function addRow($addedVals, $addTable, $con){
         return $lastID  ; 
         //var_dump($stmt); test
     } catch(PDOException $e) {
-        echo "Error : ".$e->getMessage(); // dev error mesage 
+        //echo "Error : ".$e->getMessage(); // dev error mesage 
         return false; 
     }
 }

@@ -106,8 +106,8 @@ function head($pageName, $extra = null){
 				}
 				editedRowID = IDToChange; // so saveAndSubit() knows what row to update in the DB
 				typeEditing = extra;
-				console.log("columnName: " + columnName)
-				addToEditedColumns(columnName)
+				//console.log("columnName: " + columnName); //test
+				addToEditedColumns(columnName);
 				//console.log(columnName);
 				//old
 
@@ -165,13 +165,13 @@ function head($pageName, $extra = null){
 				// should be more like addOrEditrowID but that would get confusing so just sticking withe exixting names
 				var editedRowValues = new Map();
 				editedRowValues.set("ID", editedRowID);
-				console.log("Edited row Id: " + editedRowID) ;//test
+				//console.log("Edited row Id: " + editedRowID) ;//test
 				//var editedRow = document.getElementsByClassName("editInputsID" + editedRowID);
 				for (let i = 0; i < editedColumns.length; i++) {
 					var tagToGrab = editedColumns[i] + "Input" + editedRowID + extra;
-					console.log(tagToGrab);//test
+					//console.log(tagToGrab);//test
 					var editedValElement = document.getElementById(tagToGrab);
-					console.log(editedValElement)//test 
+					//console.log(editedValElement)//test 
 					if (editedValElement.tagName == "select"){
 						editedVal = editedValElement.options[editedValElement.selectedIndex].value;
 					}else{
@@ -198,7 +198,7 @@ function head($pageName, $extra = null){
 				var allButtonTags = document.getElementsByClassName("editButtons");
 				
 				for (let i = 0; i < allInputTags.length; i++) {
-					console.log(allButtonTags[i]);
+					//console.log(allButtonTags[i]); // test
 					allInputTags[i].classList.add("hidden");
 					allButtonTags[i].classList.remove("hidden");
 				}
@@ -221,17 +221,17 @@ function head($pageName, $extra = null){
 
 			function errorMsg(errors){
 				if(typeof(errors) !== 'undefined' ){
-					console.log(errors);// test 
+					//console.log(errors);// test 
 					for(const [key, value] of Object.entries(errors)){ //loop through key pair
 						var i = 0;
-						console.log(i++);//test
-						console.log(key);//test
+						//console.log(i++);//test
+						//console.log(key);//test
 						var inputTag =  document.getElementById(key);
 						var errorMsgTag = document.getElementById(key + "Error");
 						//inputTag.innerHTML = "test"; 
-						console.log(inputTag);//test
-						console.log(errorMsgTag);//test
-						console.log(typeof(inputTag))//test
+						//console.log(inputTag);//test
+						//console.log(errorMsgTag);//test
+						//console.log(typeof(inputTag))//test
 						if(inputTag != null){ // not all errors will have an input tag to change display of
 							inputTag.classList.add("errorInput");
 						}
@@ -243,14 +243,14 @@ function head($pageName, $extra = null){
 
 			function changeTab(tagToChangeTo){
 				// get selected tab, remove selected class
-				console.log("tagToChangeTo: "+ tagToChangeTo);
+				//console.log("tagToChangeTo: "+ tagToChangeTo); //test
 				var selectedTab = document.getElementsByClassName("selected");
 				//console.log(selectedTab);//test
 				selectedTab[0].classList.remove("selected"); // [0] as getElementsByClassName returns a list of 1
 				// get tab clicked on, add selected class
 				var tabClicked = document.getElementById(tagToChangeTo + "Tab");
-				console.log(tabClicked); //test 
-				console.log("tag: "+tagToChangeTo + "Tab")
+				//console.log(tabClicked); //test 
+				//console.log("tag: "+tagToChangeTo + "Tab")
 				tabClicked.classList.add("selected");
 				// change to relevent display
 					// get container without hidden add hidden class
@@ -267,9 +267,9 @@ function head($pageName, $extra = null){
 
 			function shiftTab(newTabID, tabsOpen, maxTabsOpen=3){
 				// Shifts tabs over so they work for css 
-				console.log(newTabID + " shift tab Ran");//test
+				//console.log(newTabID + " shift tab Ran");//test
 				var newTab = document.getElementById(newTabID + "Tab");
-				console.log(newTab);//test
+				//console.log(newTab);//test
 				var leftShift = -(tabsOpen * 20);
 				newTab.style.left  = leftShift + "px";
 				newTab.style.zIndex = (maxTabsOpen - tabsOpen);
@@ -309,12 +309,12 @@ function head($pageName, $extra = null){
 				}
 				editDataString = editDataString.slice(0, -1); // removeing last & so no errors
 				
-				console.log("editDataString: " + editDataString) //test
+				//console.log("editDataString: " + editDataString) //test
 				// upadating the DB
 				var xmlhttp = new XMLHttpRequest();
 				xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-					console.log("edit responce: "+this.responseText)
+					//console.log("edit responce: "+this.responseText); //test
 					clearGenralErrorMsg();
 					return this.responseText;
 				}else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
@@ -343,7 +343,7 @@ function head($pageName, $extra = null){
 					xmlhttp.onreadystatechange = function() {
 					if (this.readyState == 4 && this.status == 200) {
 						// document.getElementById("msg").innerHTML = this.responseText;
-						console.log("delete responce: "+this.responseText);
+						//console.log("delete responce: "+this.responseText); //test
 						//visual - only if DB change worked  
 						if(tableFrom == "tasklist"){
 							closeTaskList(IDToDelete);// if open 
@@ -481,7 +481,7 @@ function getNameFromID($ID,$con){
 		$stmt->execute([$ID]);
 		return implode($stmt->fetch(PDO::FETCH_ASSOC));
 	} catch (PDOException $e) {
-		echo "Error : ".$e->getMessage();// dev error mesage
+		//echo "Error : ".$e->getMessage();// dev error mesage
 		return "error";
 	}
 }

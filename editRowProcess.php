@@ -4,7 +4,7 @@
 function editRow($editedVals, $editTable, $con){
     try{
         // bulding a Qry
-        var_dump($editedVals);//test
+        //var_dump($editedVals);//test
         $qry = "UPDATE " . $editTable . " SET";
         // adding the columns to update 
         foreach ($editedVals as $column => $valToCheck){
@@ -48,7 +48,7 @@ function editRow($editedVals, $editTable, $con){
         //var_dump($editedVals); //test
         //return $result; 
     } catch(PDOException $e) {
-        echo "Error : ".$e->getMessage(); // dev error mesage 
+        //echo "Error : ".$e->getMessage(); // dev error mesage 
         //var_dump($stmt); //test
         return false; 
    }

@@ -30,7 +30,7 @@ function checkLoginData($uname, $pword, $conn) {
                 return $msg;
             }
         } catch (PDOException $e) {
-            echo "Error : ".$e->getMessage();// dev error mesage
+            //echo "Error : ".$e->getMessage();// dev error mesage
             return "error";
         }
     }else {

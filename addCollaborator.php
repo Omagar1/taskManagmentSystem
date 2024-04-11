@@ -9,10 +9,10 @@ function addCollaborator($taskListID, $userID, $con){
         $stmt->bindParam('taskListID', $taskListID, PDO::PARAM_INT);
         $stmt->bindParam('userID', $userID, PDO::PARAM_INT);
         $stmt->execute();
-        $stmt->debugDumpParams(); //test
+        //$stmt->debugDumpParams(); //test
         return true; 
     } catch(PDOException $e){
-        echo "Error : ".$e->getMessage();// dev error mesage
+        //echo "Error : ".$e->getMessage();// dev error mesage
         return "error";
     }
 }

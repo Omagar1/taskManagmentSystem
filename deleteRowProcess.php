@@ -25,7 +25,7 @@ function deleteID($IDTodelete, $deleteFromTable, $con, $whereCondition="ID"){
         return true; 
         
     } catch(PDOException $e) {
-        echo "Error : ".$e->getMessage(); // dev error mesage 
+        //echo "Error : ".$e->getMessage(); // dev error mesage 
         $msg = "<p><b class = 'error'>Failed to Delete</b></p>"; // user error mesage 
         
         return false; 

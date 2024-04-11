@@ -41,7 +41,7 @@ function nameInDB($nameToCheck,$con){ // change ?
             return true;
         }
     } catch (PDOException $e) {
-        echo "Error : ".$e->getMessage();// dev error mesage
+        //echo "Error : ".$e->getMessage();// dev error mesage
         return "error";
     }
 }
@@ -62,12 +62,12 @@ function getTaskListID($elementID, $type, $con){
             return getTaskListID(implode($stmt->fetch(PDO::FETCH_ASSOC)),"task",$con);
         }
     } catch (PDOException $e) {
-        echo "Error : ".$e->getMessage();// dev error mesage
+        //echo "Error : ".$e->getMessage();// dev error mesage
         return "error";
     }
 }
 
-var_dump($_POST);//test
+//var_dump($_POST);//test
 //echo $_SESSION["currentDisplay"]; //test 
 //var_dump($_SESSION["tokenNTL"] == $_POST["tokenNTL"]); //test
 if ((isset($_POST["tokenNTL"]) And $_SESSION["tokenNTL"] == $_POST["tokenNTL"]) 
@@ -77,7 +77,7 @@ Or (isset($_POST["tokenETK"]) And $_SESSION["tokenETK"] == $_POST["tokenETK"])
 Or (isset($_POST["tokenNSG"]) And $_SESSION["tokenNSG"] == $_POST["tokenNSG"]) 
 Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     
-    echo "valadation Ran"; //test
+    //echo "valadation Ran"; //test
     
     //var_dump($OpenTabs);
     $valsToValadate = $_POST;
@@ -186,7 +186,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
     }elseif(empty($errors) And isset($_POST["tokenNTK"])){ //new task
-        echo "new task Ran";// test
+        //echo "new task Ran";// test
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  
         unset($valsToValadate["submit"]);
         
@@ -201,7 +201,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         unset($OpenTabs[0]);
         unset($_POST);
     }elseif(empty($errors) And isset($_POST["tokenETK"])){ //editing task
-        echo "edit tasks Ran";// test
+        //echo "edit tasks Ran";// test
         unset($valsToValadate["submit"]);
         
         editRow($valsToValadate, "task", $conn);
@@ -210,12 +210,12 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         // unseting $valsToValadate to not be used in the new task list tab as it it is finshed with now
         unset($valsToValadate);
     }elseif(empty($errors) And isset($_POST["tokenNSG"])){
-        echo "new stage Ran";// test
+        //echo "new stage Ran";// test
         unset($valsToValadate["ID"]);
         $result = addRow($valsToValadate, "stage", $conn);
         unset($valsToValadate);
     }elseif(empty($errors) And isset($_POST["tokenESG"])){
-        echo "edit stage Ran";// test
+        //echo "edit stage Ran";// test
         
         $result =  editRow($valsToValadate, "stage", $conn);
         unset($valsToValadate);
@@ -224,7 +224,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     }
 
 }elseif (isset($_POST["tokenNCU"]) And $_SESSION["tokenNCU"] == $_POST["tokenNCU"]) {
-    echo "NCU ran!";//test
+    //echo "NCU ran!";//test
     try{
         $_SESSION["currentDisplay"] = $_POST["taskListIDNCU"];
 
@@ -233,9 +233,9 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $stmt->bindParam('collabCode', $_POST["collabCodeNCU"]);
         $stmt->execute();
         $userID = $stmt->fetch()["ID"];
-        $stmt->debugDumpParams(); //test
-        echo "userID: ". var_dump($userID);//test
-        echo "count: ".$stmt->rowCount();//test
+        //$stmt->debugDumpParams(); //test
+        //echo "userID: ". var_dump($userID);//test
+        //echo "count: ".$stmt->rowCount();//test
         if($stmt->rowCount() == 1){
             addCollaborator($_POST["taskListIDNCU"], $userID, $conn); 
         }else{
@@ -243,7 +243,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         }
         //$stmt->debugDumpParams(); //test
     } catch(PDOException $e){
-        echo "Error : ".$e->getMessage();// dev error mesage
+        //echo "Error : ".$e->getMessage();// dev error mesage
     }
 }elseif(isset($_POST["tokenRC"]) And $_SESSION["tokenRC"] == $_POST["tokenRC"]){
     deleteID($_POST["taskListIDRC"],"taskListCollab",$conn,"taskListID"); // remove all the users
@@ -324,10 +324,10 @@ function closeTaskList(taskListID){
     taskListID = String(taskListID);
     //hide tasklist Tab
     
-    console.log("tasklist ID: "+ taskListID);//test
+    //console.log("tasklist ID: "+ taskListID);//test
     taskListTab = document.getElementById(taskListID + "Tab");
     taskListTab.classList.add("hidden");
-    console.log(taskListTab);//tets
+    //console.log(taskListTab);//tets
     //change view
     changeTab("all"); 
     //change close tab button to open
@@ -344,7 +344,7 @@ function closeTaskList(taskListID){
     //console.log(openTabsIDQueue);//test
     var i = 0; 
     for(var tab of openTabsIDQueue){
-        console.log("Close Tab Shift: " + tab); //test 
+        //console.log("Close Tab Shift: " + tab); //test 
         shiftTab(tab,i, maxTabsOpen);
         i++;
     }
@@ -359,8 +359,8 @@ function hideTask(IDtoHide){
 function changePriority(elementIDToChange, updateData=null, ){
     var priorityButton = document.getElementById(elementIDToChange);
     // the state of updateData is used as a boolean to see if upadating the DB is wanted 
-    console.log("updateDate: "+ updateData); //test
-    console.log("typeof(updateData): "+ typeof(updateData));
+    //console.log("updateDate: "+ updateData); //test
+    //console.log("typeof(updateData): "+ typeof(updateData));
 
     if(typeof(updateData) == "object"){
         var currentPriorityIndex = prioritiesName.indexOf(priorityButton.innerHTML.replace(" Priority",""));
@@ -369,7 +369,7 @@ function changePriority(elementIDToChange, updateData=null, ){
         var currentPriorityIndex = prioritiesName.indexOf(priorityButton.value);
     }
     
-    console.log("currentPriorityIndex: "+currentPriorityIndex);//test
+    //console.log("currentPriorityIndex: "+currentPriorityIndex);//test
     //console.log(prioritiesName.length);//test
 
     if(currentPriorityIndex == (prioritiesName.length - 1 )){
@@ -377,8 +377,8 @@ function changePriority(elementIDToChange, updateData=null, ){
     }else{
         var priorityIndexToGet = currentPriorityIndex + 1; 
     }
-    console.log("priorityIndexToGet: "+priorityIndexToGet);//test
-    console.log(prioritiesName[priorityIndexToGet]);//test
+    //console.log("priorityIndexToGet: "+priorityIndexToGet);//test
+    //console.log(prioritiesName[priorityIndexToGet]);//test
     if(typeof(updateData) == "object"){
         priorityButton.innerHTML = prioritiesName[priorityIndexToGet] + " Priority";
         //db stuff
@@ -388,8 +388,8 @@ function changePriority(elementIDToChange, updateData=null, ){
         priorityButton.value = prioritiesName[priorityIndexToGet];
     }
     // change style
-    console.log(prioritiesName);
-    console.log("priorityIndexToGet: "+ priorityIndexToGet);
+    //console.log(prioritiesName);
+    //console.log("priorityIndexToGet: "+ priorityIndexToGet);
     switch (priorityIndexToGet){
         case 0:
             priorityButton.classList.remove("green");
@@ -423,34 +423,31 @@ function hideStage(stageID){
     document.getElementById("stage"+stageID).remove();
 }
 
-function completeStage(stageID,){
+function completeStage(stageID){
     
 
     // getting data to send to db
     var dateTimeCompletedToSet;
     var completeButton = document.getElementById("complete" + stageID + "SG");
-    var completeButtonOSD = document.getElementById("complete" + stageID + "SG-OSD");
 
     if (completeButton.classList.contains("green")){ // get currentVal based off if element has the green class
         currentVal = true; 
         dateTimeCompletedToSet = null;
         //visual stuff
         completeButton.classList.remove("green");
-        completeButtonOSD.classList.remove("green");
         
     }else{
         currentVal = false;
         dateTimeCompletedToSet = getCurrentDateTime();
-        console.log("current Date Time: " + dateTimeCompletedToSet )// test
+        //console.log("current Date Time: " + dateTimeCompletedToSet )// test
         //visual stuff
         completeButton.classList.add("green");
-        completeButtonOSD.classList.add("green");
         
     }
     
-    console.log("currentVal: " + currentVal); // test 
-    console.log("complete" + stageID + "SG"); // test 
-    console.log(completeButton);  // test 
+    //console.log("currentVal: " + currentVal); // test 
+    //console.log("complete" + stageID + "SG"); // test 
+    //console.log(completeButton);  // test 
    
     
      
@@ -468,13 +465,13 @@ function changeWeighting(taskID, numberExtra=-1){
     // and as we are dividing by two to get the correct amount of stages an even number is needed
     //the extra 1 simulates if the new stage had two elements with the class "weighting"+taskID+"SG" like the other elements 
     var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
-    console.log("weightingsToChange: "+ weightingsToChange); //test
-    console.log("weightingsToChange num of : "+ weightingsToChange.length); //test
+    //console.log("weightingsToChange: "+ weightingsToChange); //test
+    //console.log("weightingsToChange num of : "+ weightingsToChange.length); //test
     var numberOfStagesToConsider = weightingsToChange.length + numberExtra ;// to be used when a stage is uneven weighted to calculate the new evenWeighting of the rest of the stages// its divided by 2 as weightingsToChange.length 
     var percentageLeft = 100.00; // to be used when a stage is unevenly weighted to calculate the new evenWeighting of the rest of the stages
 
     for(const weighting of weightingsToChange){ // first check if there is any uneven weighting this MUST be first  as percentageLeft and  numberOfStagesToConsider must be set before the even weitings are calculated    
-        console.log("first loop: " + weighting.id );
+        //console.log("first loop: " + weighting.id );
         // var weightingsConsidered = []; 
         // var currentStageID = weighting.id.replace("weighting","").replace("Input","").replace("SG","")
         //console.log("currentStageID: "+currentStageID);
@@ -495,12 +492,12 @@ function changeWeighting(taskID, numberExtra=-1){
         }
     }
     for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even
-        console.log("2nd loop: " + weighting );
+        //console.log("2nd loop: " + weighting );
         if (weighting.classList.contains("even")){
             let newWeighting = percentageLeft / numberOfStagesToConsider;
             let newWeightingNumber = Number(newWeighting);
-            console.log("numberOfStagesToConsider: "+ numberOfStagesToConsider);
-            console.log("newWeighting: " + newWeightingNumber + "%"); // Test
+            //console.log("numberOfStagesToConsider: "+ numberOfStagesToConsider);
+            //console.log("newWeighting: " + newWeightingNumber + "%"); // Test
             //console.log(newWeightingNumber + " > 0: ", newWeightingNumber > 0); // Test
 
             if (newWeightingNumber < 0) {
@@ -522,13 +519,13 @@ function changeWeighting(taskID, numberExtra=-1){
 function changeWeightingsInDB(taskID, reload=false){
     //change weightings in DB
     var weightingsToChange = document.getElementsByClassName("weighting"+taskID+"SG");
-    console.log("weightings to change: "+ weightingsToChange);
+    //console.log("weightings to change: "+ weightingsToChange);
     for(const weighting of weightingsToChange){ // then change value of weighting  that are suposed to be even excluding new satge weighting 
         var stageID = weighting.id.replace("weighting","").replace("SG","");
         if (weighting.classList.contains("even") &&  !stageID.includes("N") ){
              
             var updateData = {ID: Number(stageID), weighting: Number(weighting.innerHTML.replace("%","")), table:"stage"}
-            console.log(updateData); //test 
+            //console.log(updateData); //test 
             useAJAXedit(updateData);
         }
     }
@@ -544,8 +541,8 @@ function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
     var evenButton = document.getElementById("evenButton"+stageID+"SG");
     var weightingInput = document.getElementById("weightingInput"+stageID+"SG");
     var isEven;
-    console.log("id used: weighting"+stageID+"SG")
-    console.log("weightingTag: "+weightingTag);
+    //console.log("id used: weighting"+stageID+"SG"); //test
+    //console.log("weightingTag: "+weightingTag); //test
     isUnEven = true;
     weightingTag.classList.replace("even","unEven");
     weightingTag.innerHTML = weightingInput.value;
@@ -556,7 +553,7 @@ function changeWeightingToUnEven(taskID, stageID ,numberExtra=-1){
     //changeWeightingsInDB(taskID);
     //chanage in DB
     var updateData = {ID: Number(stageID), unEvenWeighting: isUnEven, table:"stage"}
-    console.log(updateData); //test 
+    //console.log(updateData); //test 
     useAJAXedit(updateData);
     
     
@@ -581,7 +578,7 @@ function cancelNewStage(taskID, stageCount){
     document.getElementById("newStageRow"+taskID).classList.replace("showing", "hidden");
     document.getElementById("newStageRow"+taskID+"PT2").classList.replace("showing", "hidden");
     //document.getElementById("weighting"+taskID+"NSG").classList.replace("unEven", "even"); // resetting value to even o it dosent interfear with changeWeighting calculations 
-    console.log(stageCount); 
+    //console.log(stageCount); 
     if(Number(stageCount) == 1){
         document.getElementById("oneStageDisplay"+taskID).classList.replace("hidden", "showing");
         document.getElementById("multiStageDisplay"+taskID).classList.replace("showing", "hidden");
@@ -611,8 +608,8 @@ function evenUneven(stageID, taskID, numberExtra){ //toggle even value
     var weightingTag = document.getElementById("weighting"+stageID+"SG");
     var evenButton = document.getElementById("evenButton"+stageID+"SG");
     var isEven;
-    console.log("id used: weighting"+stageID+"SG")
-    console.log("weightingTag: "+weightingTag);
+    //console.log("id used: weighting"+stageID+"SG")
+    //console.log("weightingTag: "+weightingTag);
     // change display
     if(weightingTag.classList.contains("even")){
         isUnEven = true;
@@ -624,10 +621,10 @@ function evenUneven(stageID, taskID, numberExtra){ //toggle even value
         evenButton.innerHTML = "Even"
     }
     //chanage in DB
-    console.log("stageID.length: "+stageID.length);//test
+    //console.log("stageID.length: "+stageID.length);//test
     if(stageID[stageID.length-1] != "N"){
         var updateData = {ID: Number(stageID), unEvenWeighting: isUnEven, table:"stage"}
-        console.log(updateData); //test 
+        //console.log(updateData); //test 
         useAJAXedit(updateData);
     }else{
         document.getElementById("unEvenWeighting"+stageID+"SG").value = isUnEven;// change input field
@@ -675,7 +672,7 @@ function useAJAXaddCollaborator(taskListID, userID){
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
-        console.log("add responce: "+this.responseText)
+        //console.log("add responce: "+this.responseText)
         clearGenralErrorMsg();
         return this.responseText;
     }else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
@@ -914,8 +911,8 @@ foreach($taskLists as $row => $vals){
                                 <!-- one Stage -->
                                 <div  id ="oneStageDisplay<?php echo $task->ID; ?>" class ="stageList">
                                     <p>Complete:</p>
-                                    <button onclick="completeStage(<?php echo $task->stages[0]->ID?>)" id="complete<?php echo $task->stages[0]->ID?>SG-OSD" class="stageButton <?php echo ($task->stages[0]->complete == 1)?  "green": "" ?>">✓</button>
-                                    <button onclick="addNewStage(<?php echo $task->ID; ?>, true)" id="addNewStageButton<?php echo $task->ID; ?>-OSD" class = "button green">Add New Stage</button>
+                                    <button onclick="completeStage(<?php echo $task->stages[0]->ID?>)" id="complete<?php echo $task->stages[0]->ID?>SG" class="stageButton <?php echo ($task->stages[0]->complete == 1)?  "green": "" ?>">✓</button>
+                                    <button onclick="addNewStage(<?php echo $task->ID; ?>, true)" id="addNewStageButton<?php echo $task->ID; ?>" class = "button green">Add New Stage</button>
                                 </div>
                             <?php endif;?>
                             <!-- two stages above -->

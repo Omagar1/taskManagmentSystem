@@ -25,7 +25,7 @@ function createUser($uname, $email, $pword, $con){
         //echo "password in signUp: ". $pwordHashed. "</br>"; //test
         return checkLoginData($uname, $pword, $con);
     } catch(PDOException $e){
-        echo "Error : ".$e->getMessage();// dev error mesage
+        //echo "Error : ".$e->getMessage();// dev error mesage
         return "error";
     }
     
