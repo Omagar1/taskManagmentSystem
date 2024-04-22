@@ -357,7 +357,10 @@ function head($pageName, $extra = null){
 						}else if(tableFrom == "tasklistcollab"){
 							hideUser(IDToDelete); 
 							deleteUsing = "userID";
+						}else if(){
+
 						}
+
 						clearGeneralErrorMsg();
 					}else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
 						addGeneralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");

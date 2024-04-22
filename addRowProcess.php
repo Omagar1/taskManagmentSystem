@@ -2,7 +2,7 @@
 
 function addRow($addedVals, $addTable, $con){
     try{
-        echo"addRow Ran for: ". $addTable;//test
+        //echo"addRow Ran for: ". $addTable;//test
      
        
         //echo $addTable; //test

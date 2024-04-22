@@ -176,6 +176,7 @@ $_SESSION["tokenEUR"] = $tokenEUR; // for new task lists
                 </tr>
                 <script> errorMsg(<?php if (isset($errors)){ echo json_encode($errors);} // need the json encode part ?>)  </script>
             </table>
+            <button onclick="useAJAXdelete(<?php echo $_SESSION['userID'];?>,'user')" class="red button">Delete account?</button>
         </div>
         <div id="changePasswordContainer" class="hidden">
             <form action="settings.php" method="post">
@@ -202,8 +203,6 @@ $_SESSION["tokenEUR"] = $tokenEUR; // for new task lists
             </form>
         </div>
     </div>
-
-s
     <?php footer(); ?>
 </body>
 
