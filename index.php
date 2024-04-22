@@ -77,9 +77,9 @@ if (isset($_POST['submitL'])) {
     if ($existingUsernames == null){
         $existingUsernames = []; 
     }
-    var_dump($existingUsernames); 
-    echo "does Bob exixst: ";
-    var_dump(isInArray("Bob", $existingUsernames));
+    //var_dump($existingUsernames); 
+    //echo "does Bob exixst: "; //test
+    //var_dump(isInArray("Bob", $existingUsernames));
     // ---------- Username valadtaion ----------
     if ($unameSU == "") {
         $msg = "Username Must Not be Empty";

@@ -357,8 +357,8 @@ function head($pageName, $extra = null){
 						}else if(tableFrom == "tasklistcollab"){
 							hideUser(IDToDelete); 
 							deleteUsing = "userID";
-						}else if(){
-
+						}else if(tableFrom="user"){
+							window.location.replace("LOProcess.php"); 
 						}
 
 						clearGeneralErrorMsg();
