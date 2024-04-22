@@ -52,7 +52,7 @@ function getTaskListID($elementID, $type, $con){
             $stmt = $con->prepare($qry);
             $stmt->execute([$elementID]);
             $ID = implode($stmt->fetch(PDO::FETCH_ASSOC));
-            var_dump($ID);
+            //var_dump($ID); //test
             //echo "Id found: ". $ID ; //test
             return $ID;
         }elseif ($type == "stage"){
@@ -89,7 +89,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $endtag = "NTL";
         array_push($OpenTabs,"newTaskList");
         $_SESSION["currentDisplay"] = "newTaskList";
-        $valsToValadate["ID"] = "";
+        unset($valsToValadate["ID"]);
     }elseif(isset($_POST["tokenETL"])){
         array_push($OpenTabs, $valsToValadate["ID"]);
         $_SESSION["currentDisplay"] = $valsToValadate["ID"];
@@ -98,7 +98,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $endtag = "NTK";
         array_push($OpenTabs,"newTask");
         $_SESSION["currentDisplay"] = "newTask";
-        $valsToValadate["ID"] = "";
+        unset($valsToValadate["ID"]);
     }elseif(isset($_POST["tokenETK"])){
         $endtag = "ETK";
         $taskListID = getTaskListID($valsToValadate["ID"], "task", $conn);
@@ -129,7 +129,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         if($valToCheck == "" And $column != "deadline" And $column != "ID"){ 
             $msg = ucfirst($column)." Must Not Be Empty";
             $errors[$column.$endtag.$valsToValadate["ID"]] = $msg;
-            var_dump($errors); 
+            //var_dump($errors); //test
         }elseif($column == "name"){
             if(nameInDB($valToCheck,$conn)){
                 $msg = $valToCheck."Task List Already exists";
@@ -159,6 +159,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     unset($valsToValadate["token"]);
     if(isset($valsToValadate["deadline"]) And ($valsToValadate["deadline"] == "0000-00-00 00:00:00" Or $valsToValadate["deadline"] == "" )){
         $valsToValadate["deadline"] = null;// must be set as so you can remove a deadline
+        //unset($valsToValadate["deadline"]); //test
     } 
     //var_dump($errors);//test
     if(empty($errors) And isset($_POST["tokenNTL"]) ){ // new task list
@@ -667,16 +668,16 @@ function showTasks(taskListID){
 
 }
 function useAJAXaddCollaborator(taskListID, userID){
-    addGenralErrorMsg("adding Collaborator...", "green");
+    addGeneralErrorMsg("adding Collaborator...", "green");
     // upadating the DB
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange = function() {
     if (this.readyState == 4 && this.status == 200) {
         //console.log("add responce: "+this.responseText)
-        clearGenralErrorMsg();
+        clearGeneralErrorMsg();
         return this.responseText;
     }else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
-        addGenralErrorMsg("operation failed; oops!", "red");
+        addGeneralErrorMsg("operation failed; oops!", "red");
     }
     };
 
@@ -819,8 +820,8 @@ foreach($taskLists as $row => $vals){
             foreach($taskLists as $taskList){
                 
         ?>
-            <button onclick="changeTab('<?php echo $taskList->ID?>')" id="<?php echo $taskList->ID."Tab"?>" class="tab <?php echo($taskList->name == "Genral") ? "first" : "hidden";  ?> "><?php echo $taskList->name?></button>
-            <?php if($taskList->name == "Genral") {
+            <button onclick="changeTab('<?php echo $taskList->ID?>')" id="<?php echo $taskList->ID."Tab"?>" class="tab <?php echo($taskList->name == "General") ? "first" : "hidden";  ?> "><?php echo $taskList->name?></button>
+            <?php if($taskList->name == "General") {
                 array_push($OpenTabs, $taskList->ID);
             }
         

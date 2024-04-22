@@ -6,12 +6,12 @@
     --bold-italic-letter-spacing: 0px;
     --bold-italic-line-height: normal;
     --bold-italic-font-style: italic;
-    --genral-font-family: "MonomaniacOne-Regular", Helvetica;
-    --genral-font-weight: 400;
-    --genral-font-size: 12px;
-    --genral-letter-spacing: 0px;
-    --genral-line-height: normal;
-    --genral-font-style: normal;
+    --General-font-family: "MonomaniacOne-Regular", Helvetica;
+    --General-font-weight: 400;
+    --General-font-size: 12px;
+    --General-letter-spacing: 0px;
+    --General-line-height: normal;
+    --General-font-style: normal;
     /* Colours */
     --main: rgba(24, 110, 124, 1);
     --main: rgba(24, 110, 124, 1);

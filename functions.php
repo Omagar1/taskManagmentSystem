@@ -290,19 +290,19 @@ function head($pageName, $extra = null){
 				return datetime; 
 			}
 
-			function addGenralErrorMsg(msgToAdd, colour){
-				clearGenralErrorMsg(); // clears before adding
+			function addGeneralErrorMsg(msgToAdd, colour){
+				clearGeneralErrorMsg(); // clears before adding
 				var msgElement = document.getElementById("genralErrorMsg")
 				msgElement.innerHTML = msgToAdd;
 				msgElement.classList.add(colour); 
 			}
-			function clearGenralErrorMsg(){
+			function clearGeneralErrorMsg(){
 				var msgElement = document.getElementById("genralErrorMsg")
 				msgElement.innerHTML = "";
 				msgElement.classList = ""; 
 			}
 			function useAJAXedit(editData){
-				addGenralErrorMsg("editing...", "green");
+				addGeneralErrorMsg("editing...", "green");
 				var editDataString = ""; 
 				for(const [key, value] of Object.entries(editData)){
 					editDataString = editDataString + key +"="+ value+"&";
@@ -315,10 +315,10 @@ function head($pageName, $extra = null){
 				xmlhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
 					//console.log("edit responce: "+this.responseText); //test
-					clearGenralErrorMsg();
+					clearGeneralErrorMsg();
 					return this.responseText;
 				}else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
-					addGenralErrorMsg("editing failed; oops!", "red");
+					addGeneralErrorMsg("editing failed; oops!", "red");
 				}
 				};
 
@@ -330,12 +330,12 @@ function head($pageName, $extra = null){
 
 			function useAJAXdelete(IDToDelete,tableFrom, extra=null){
 				if (tableFrom == "tasklistcollab" && userID != extra && userID != IDToDelete){ //extra will be ownerID if tableFrom == "tasklistcollab"
-					addGenralErrorMsg("You cannot remove other users if you are not the owner of the Tasklist", "red");
+					addGeneralErrorMsg("You cannot remove other users if you are not the owner of the Tasklist", "red");
 				}else if (tableFrom == "tasklist" && userID != extra) { //extra will be ownerID if tableFrom == "tasklist"
-					addGenralErrorMsg("You cannot the Tasklist if you are not the owner of the Tasklist", "red");
+					addGeneralErrorMsg("You cannot the Tasklist if you are not the owner of the Tasklist", "red");
 				}else if (confirm("are you sure?")) {
 					// loading msg 
-					addGenralErrorMsg("Removing " + tableFrom + "...", "green");
+					addGeneralErrorMsg("Removing " + tableFrom + "...", "green");
 					
 					//from data base - using ajax
 					var deleteUsing = "ID";
@@ -358,9 +358,9 @@ function head($pageName, $extra = null){
 							hideUser(IDToDelete); 
 							deleteUsing = "userID";
 						}
-						clearGenralErrorMsg();
+						clearGeneralErrorMsg();
 					}else if(this.readyState == 4 && (this.status == 403 || this.status == 404 )) {
-						addGenralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");
+						addGeneralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");
 					}
 					};
 					xmlhttp.open("GET", "AJAXdelete.php?"+deleteUsing+"=" + IDToDelete + "&table=" + tableFrom, true);

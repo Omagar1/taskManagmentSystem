@@ -16,10 +16,10 @@ function createUser($uname, $email, $pword, $con){
         $stmt = $con->prepare($qry);
         $stmt->execute([$uname, $pwordHashed, $email, $newCollabCode]);
         $newUserID = $con->lastInsertId();
-        // setting up user's genral tasklist
+        // setting up user's General tasklist
         $qry = "INSERT INTO tasklist (`name`, ownerID) VALUES (?,?);"; 
         $stmt = $con->prepare($qry);
-        $stmt->execute(["Genral", $newUserID]);
+        $stmt->execute(["General", $newUserID]);
 
         // logs users in after sign up
         //echo "password in signUp: ". $pwordHashed. "</br>"; //test
