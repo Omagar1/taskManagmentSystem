@@ -339,6 +339,9 @@ function head($pageName, $extra = null){
 					
 					//from data base - using ajax
 					var deleteUsing = "ID";
+					if(tableFrom == "tasklistcollab"){
+						deleteUsing = "userID"; 
+					}
 					var xmlhttp = new XMLHttpRequest();
 					xmlhttp.onreadystatechange = function() {
 					if (this.readyState == 4 && this.status == 200) {
@@ -356,7 +359,6 @@ function head($pageName, $extra = null){
 							changeWeightingsInDB(extra);	
 						}else if(tableFrom == "tasklistcollab"){
 							hideUser(IDToDelete); 
-							deleteUsing = "userID";
 						}else if(tableFrom="user"){
 							window.location.replace("LOProcess.php"); 
 						}
@@ -366,7 +368,7 @@ function head($pageName, $extra = null){
 						addGeneralErrorMsg("Removing the " + tableFrom + " failed; oops!", "red");
 					}
 					};
-					xmlhttp.open("GET", "AJAXdelete.php?"+deleteUsing+"=" + IDToDelete + "&table=" + tableFrom, true);
+					xmlhttp.open("GET", "AJAXdelete.php?ID=" + IDToDelete + "&table=" + tableFrom + "&whereCon=" + deleteUsing, true);
 					xmlhttp.send();
 				} 
 			}

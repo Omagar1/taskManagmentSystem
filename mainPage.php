@@ -107,7 +107,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     }elseif(isset($_POST["tokenESG"])){
         $endtag = "ESG";
         $taskListID = getTaskListID($valsToValadate["ID"], "stage", $conn);
-        echo "taskListID: ". $taskListID; //test
+        //echo "taskListID: ". $taskListID; //test
         array_push($OpenTabs,$taskListID);
         $_SESSION["currentDisplay"] = $taskListID;
     }elseif(isset($_POST["tokenNSG"])){
@@ -233,12 +233,21 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
         $stmt = $conn->prepare($qry);
         $stmt->bindParam('collabCode', $_POST["collabCodeNCU"]);
         $stmt->execute();
-        $userID = $stmt->fetch()["ID"];
+        $newCollabUserID = $stmt->fetch()["ID"];
+
+        $qry2 = "SELECT userID FROM tasklistcollab WHERE userID = :userID ";
+        $stmt2 = $conn->prepare($qry2);
+        $stmt2->bindParam('collabCode', $newCollabUserID);
+        $stmt2->execute();
         //$stmt->debugDumpParams(); //test
         //echo "userID: ". var_dump($userID);//test
         //echo "count: ".$stmt->rowCount();//test
-        if($stmt->rowCount() == 1){
-            addCollaborator($_POST["taskListIDNCU"], $userID, $conn); 
+
+        array_push($OpenTabs, $_POST["taskListIDNCU"]);
+        if($stmt2->rowCount() != 0){
+            $errors["NCU"] = "User already in Tasklist!";
+        }elseif($stmt1->rowCount() == 1){
+            addCollaborator($_POST["taskListIDNCU"], $newCollabUserID, $conn); 
         }else{
             $errors["NCU"] = "Collab code does not Match with any users";
         }

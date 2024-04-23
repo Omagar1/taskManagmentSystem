@@ -1,8 +1,8 @@
 <?php
 function addCollaborator($taskListID, $userID, $con){
     try{
-        echo "typeof taskListID : ". var_dump($taskListID);
-        echo "typeof userID : ". var_dump($userID);
+        //echo "typeof taskListID : ". var_dump($taskListID);
+        //echo "typeof userID : ". var_dump($userID);
         $qry = "INSERT INTO tasklistcollab (taskListID, userID) VALUES (:taskListID,:userID);";
         
         $stmt = $con->prepare($qry);
