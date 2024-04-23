@@ -228,28 +228,36 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     //echo "NCU ran!";//test
     try{
         $_SESSION["currentDisplay"] = $_POST["taskListIDNCU"];
+        array_push($OpenTabs, $_POST["taskListIDNCU"]);
 
         $qry = "SELECT ID FROM user WHERE collabCode = :collabCode ";
         $stmt = $conn->prepare($qry);
         $stmt->bindParam('collabCode', $_POST["collabCodeNCU"]);
         $stmt->execute();
-        $newCollabUserID = $stmt->fetch()["ID"];
-
-        $qry2 = "SELECT userID FROM tasklistcollab WHERE userID = :userID ";
-        $stmt2 = $conn->prepare($qry2);
-        $stmt2->bindParam('collabCode', $newCollabUserID);
-        $stmt2->execute();
-        //$stmt->debugDumpParams(); //test
-        //echo "userID: ". var_dump($userID);//test
-        //echo "count: ".$stmt->rowCount();//test
-
-        array_push($OpenTabs, $_POST["taskListIDNCU"]);
-        if($stmt2->rowCount() != 0){
-            $errors["NCU"] = "User already in Tasklist!";
-        }elseif($stmt1->rowCount() == 1){
-            addCollaborator($_POST["taskListIDNCU"], $newCollabUserID, $conn); 
-        }else{
+        $result = $stmt->fetch(PDO::FETCH_ASSOC); 
+        //var_dump($result); //test
+        //var_dump(implode($result)); //test
+        if(!$result){
             $errors["NCU"] = "Collab code does not Match with any users";
+            //echo "Collab code does not Match with any users"; //test 
+        }else{
+            $newCollabUserID = (int)implode($result);
+
+            $qry2 = "SELECT userID FROM tasklistcollab WHERE userID = :userID ";
+            $stmt2 = $conn->prepare($qry2);
+            $stmt2->bindParam('userID', $newCollabUserID);
+            $stmt2->execute();
+            //$stmt->debugDumpParams(); //test
+            //echo "userID: ". var_dump($userID);//test
+            //echo "count: ".$stmt->rowCount();//test
+
+            if($stmt2->rowCount() != 0){
+                $errors["NCU"] = "User already in Tasklist!";
+                //echo "User already in Tasklist!"; //test 
+            }elseif($stmt->rowCount() == 1){
+                //echo "addcolaborators Ran"; //test 
+                addCollaborator($_POST["taskListIDNCU"], $newCollabUserID, $conn);
+            }
         }
         //$stmt->debugDumpParams(); //test
     } catch(PDOException $e){
