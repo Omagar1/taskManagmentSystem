@@ -9,23 +9,25 @@ function deleteID($IDTodelete, $deleteFromTable, $con, $whereCondition="ID"){
         //$msg = "<p><b class = 'success'>Deletion Completed</b></p>";
 
         //so deleation is cascaded down all the relationaships 
-        $lastId = $con->lastInsertId(); // in the case where the $whereCondition is not the Primary key of the record 
-        switch($deleteFromTable){
-            case "user":
-                deleteID($lastId, "tasklist", $con, "ownerID");
-                break;
-            case "tasklist":
-                deleteID($lastId, "task", $con, "taskListID");
-                break;
-            case "task":
-                deleteID($lastId, "stage", $con, "taskID");
-                break;
-        }
+        //$lastId = $con->lastInsertId(); // in the case where the $whereCondition is not the Primary key of the record 
+        // switch($deleteFromTable){
+        //     case "user":
+        //         deleteID($lastId, "tasklist", $con, "ownerID");
+        //         break;
+        //     case "tasklist":
+        //         deleteID($lastId, "task", $con, "taskListID");
+        //         break;
+        //     case "task":
+        //         deleteID($lastId, "stage", $con, "taskID");
+        //         break;
+        // }
         
         return true; 
         
     } catch(PDOException $e) {
-        //echo "Error : ".$e->getMessage(); // dev error mesage 
+        echo $qry;
+
+        echo "Error : ".$e->getMessage(); // dev error mesage 
         $msg = "<p><b class = 'error'>Failed to Delete</b></p>"; // user error mesage 
         
         return false; 

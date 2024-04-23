@@ -160,7 +160,7 @@ Or (isset($_POST["tokenESG"]) And $_SESSION["tokenESG"] == $_POST["tokenESG"])){
     if(isset($valsToValadate["deadline"]) And ($valsToValadate["deadline"] == "0000-00-00 00:00:00" Or $valsToValadate["deadline"] == "" )){
         $valsToValadate["deadline"] = null;// must be set as so you can remove a deadline
         //unset($valsToValadate["deadline"]); //test
-    } 
+    }
     //var_dump($errors);//test
     if(empty($errors) And isset($_POST["tokenNTL"]) ){ // new task list
         $valsToValadate["priority"] = array_search($valsToValadate["priority"],$prioritiesName) + 1; // index is used as encoded priority numeric value  

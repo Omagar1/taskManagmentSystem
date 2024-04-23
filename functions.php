@@ -360,7 +360,8 @@ function head($pageName, $extra = null){
 						}else if(tableFrom == "tasklistcollab"){
 							hideUser(IDToDelete); 
 						}else if(tableFrom="user"){
-							window.location.replace("LOProcess.php"); 
+							//window.location.replace("LOProcess.php");
+							console.log("AJAX Response: "+this.responseText);//test
 						}
 
 						clearGeneralErrorMsg();
